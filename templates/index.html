@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AsteroMiner AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="bg-black text-white">
+
+    <div class="pt-8 px-6 mt-[4rem]">
+        <div class="max-w-6xl mx-auto mb-[5rem]">
+            <div class="grid md:grid-cols-[1fr,1fr] gap-6">
+                <div class="text-white space-y-4 mt-9">
+                    <h1 class="text-3xl font-bold text-purple-400 bg-clip-text text-transparent">
+                        AsteroMiner AI 🌌🤖
+                    </h1>
+                    <h2 class="text-xl text-purple-300">Your Gateway to Asteroid Mining!</h2>
+
+                    <p class="text-base text-gray-300">
+                        Unlock the cosmos with AsteroMiner AI, merging advanced tech, AI, and real-time data for
+                        smarter, more efficient asteroid mining.
+                    </p>
+
+                    <div class="space-y-2">
+                        <h3 class="text-lg font-semibold text-purple-300">Discover AsteroMiner AI:</h3>
+                        <ul class="text-base space-y-1 text-gray-300">
+                            <li>✨ Analyze asteroids to find prime mining targets.</li>
+                            <li>🌌 Access real-time data from top space agencies.</li>
+                            <li>🔍 Get personalized mining strategies for optimal results.</li>
+                            <li>📈 Receive feasibility reports on material value and costs.</li>
+                            <li>🛠️ Plan missions with automated tools and equipment suggestions.</li>
+                            <li>🌍 Promote sustainable, responsible mining practices.</li>
+                        </ul>
+                    </div>
+
+                    <p class="text-lg font-semibold text-purple-300">
+                        Join the future of space mining with AsteroMiner AI! 🚀🌠
+                    </p>
+                </div>
+
+                <div>
+                    <h2 class="text-xl font-bold text-white mb-3">Asteroid Parameters</h2>
+                    <form method="POST" action="/analyze">
+                        <label for="absolute_magnitude">Absolute Magnitude:</label>
+                        <input type="text" id="absolute_magnitude" name="absolute_magnitude" required><br>
+                    
+                        <label for="albedo">Albedo:</label>
+                        <input type="text" id="albedo" name="albedo" required><br>
+                    
+                        <label for="eccentricity">Eccentricity:</label>
+                        <input type="text" id="eccentricity" name="eccentricity" required><br>
+                    
+                        <label for="aphelion_distance">Aphelion Distance:</label>
+                        <input type="text" id="aphelion_distance" name="aphelion_distance" required><br>
+                    
+                        <button type="submit">Analyze</button>
+                    </form>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        {% if asteroid_details %}
+        <div class="w-full max-w-[93vw] mx-auto mb-[3rem]">
+            <div class="grid grid-cols-2 gap-4">
+                <div
+                    class="px-4 py-2 rounded bg-zinc-800 text-white border border-purple-900/50 hover:border-purple-700/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.15)] transition-all duration-300 h-[20rem]">
+                    <h3 class="text-lg font-semibold text-purple-300 mb-2">Asteroid Details</h3>
+                    <p class="text-sm text-gray-300">
+                        <strong>Name:</strong> {{ asteroid_details.name }}<br>
+                        <strong>Short Name:</strong> {{ asteroid_details.short_name }}<br>
+                        <strong>Type:</strong> {{ asteroid_details.type }}<br>
+                        <strong>Composition:</strong> {{ asteroid_details.composition }}<br>
+                        <strong>Size:</strong> {{ asteroid_details.size }}<br>
+                        <strong>Distance:</strong> {{ asteroid_details.distance }}<br>
+                        <strong>Location:</strong> {{ asteroid_details.location }}<br>
+                        <strong>Speed:</strong> {{ asteroid_details.speed }}<br>
+                        <strong>Rotation Period:</strong> {{ asteroid_details.rotation_period }}<br>
+                        <strong>Orbital Period:</strong> {{ asteroid_details.orbital_period }}<br>
+                        <strong>Eccentricity:</strong> {{ asteroid_details.eccentricity }}<br>
+                        <strong>Perihelion:</strong> {{ asteroid_details.perihelion }}<br>
+                        <strong>Aphelion:</strong> {{ asteroid_details.aphelion }}<br>
+                        <strong>Inclination:</strong> {{ asteroid_details.inclination }}<br>
+                        <strong>Close Approach:</strong> {{ asteroid_details.close_approach }}
+                    </p>
+                </div>
+
+                <div
+                    class="px-4 py-2 rounded bg-zinc-800 text-white border border-purple-900/50 hover:border-purple-700/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.15)] transition-all duration-300 h-[20rem]">
+                    <h3 class="text-lg font-semibold text-purple-300 mb-2">Mining Instructions</h3>
+                    <p class="text-sm text-gray-300">{{ mining_instructions }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full max-w-[93vw] mx-auto mb-[3rem]">
+            <div class="grid grid-cols-1 gap-4">
+                <div
+                    class="px-4 py-2 rounded bg-zinc-800 text-white border border-purple-900/50 hover:border-purple-700/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.15)] transition-all duration-300">
+                    <h3 class="text-lg font-semibold text-purple-300 mb-2">Mining Recommendation</h3>
+                    <p class="text-sm text-gray-300">{{ mining_recommendation }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+
+</html>
