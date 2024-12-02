@@ -124,10 +124,10 @@ def analyze():
             # Prepare asteroid details for rendering
             asteroid_details = {
                 "Name": name or 'N/A',
-                "Short Name": short_name or 'N/A',
+                "ShortName": short_name or 'N/A',
                 "SPK-ID": spk_id,
-                "Orbit Class": orbit_class or 'N/A',
-                "Not a Potentially Hazardous Asteroid (PHA)": pha or 'N/A',
+                "OrbitClass": orbit_class or 'N/A',
+                "NotaPotentiallyHazardousAsteroid(PHA)": pha or 'N/A',
                 "Orbit ID": orbit_id or 'N/A',
                 "Absolute Magnitude (H)": abs_magnitude or 'N/A',
                 "Magnitude Slope (G)": magnitude_slope or 'N/A',
@@ -138,7 +138,7 @@ def analyze():
                 "Bulk Density": bulk_density or 'N/A',
                 **orbital_elements
             }
-
+            print(asteroid_details)
             # Generate mining instructions
             mining_prompt = (
                  f"Provide a detailed step-by-step guide for safely traveling to and mining an asteroid based on the following details:\n"
