@@ -134,10 +134,15 @@ def analyze():
                 "dia": effective_diameter or 'N/A',
                 "Dimensions": dimensions or 'N/A',
                 "RotationPeriod": rotation_period or 'N/A',
-                "Geometric Albedo": geometric_albedo or 'N/A',
-                "Bulk Density": bulk_density or 'N/A',
+                "Albedo": geometric_albedo or 'N/A',
+                "BulkDensity": bulk_density or 'N/A',
                 "a": orbital_elements['semi-major axis'],
-                **orbital_elements
+                'eccentricity':orbital_elements['eccentricity'],
+                'perihelion':orbital_elements['perihelion distance'],
+                'aphelion':orbital_elements[ 'aphelion distance'],
+                'inclination':orbital_elements['inclination; angle with respect to x-y ecliptic plane'],
+                'longi':orbital_elements['longitude of the ascending node'],
+                'args':orbital_elements['argument of perihelion']
             }
             print(asteroid_details)
             # Generate mining instructions
