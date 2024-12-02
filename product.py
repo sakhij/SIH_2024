@@ -127,15 +127,16 @@ def analyze():
                 "ShortName": short_name or 'N/A',
                 "SPK-ID": spk_id,
                 "OrbitClass": orbit_class or 'N/A',
-                "NotaPotentiallyHazardousAsteroid(PHA)": pha or 'N/A',
+                "pha": pha or 'N/A',
                 "OrbitID": orbit_id or 'N/A',
-                "Absolute Magnitude (H)": abs_magnitude or 'N/A',
-                "Magnitude Slope (G)": magnitude_slope or 'N/A',
-                "Effective Diameter": effective_diameter or 'N/A',
+                "H": abs_magnitude or 'N/A',
+                "G": magnitude_slope or 'N/A',
+                "dia": effective_diameter or 'N/A',
                 "Dimensions": dimensions or 'N/A',
-                "Rotation Period": rotation_period or 'N/A',
+                "RotationPeriod": rotation_period or 'N/A',
                 "Geometric Albedo": geometric_albedo or 'N/A',
                 "Bulk Density": bulk_density or 'N/A',
+                "a": orbital_elements['semi-major axis'],
                 **orbital_elements
             }
             print(asteroid_details)
