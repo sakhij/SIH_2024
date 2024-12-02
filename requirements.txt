@@ -1,0 +1,6 @@
+cohere
+pandas
+flask
+requests
+scipy
+scikit-learn
