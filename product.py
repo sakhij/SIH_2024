@@ -13,6 +13,18 @@ app = Flask(__name__)
 cohere_api_key = "Zppye9OdNDcXgkNIhaAVlvbFNzBnDmX6A095XOJK"
 co = cohere.Client(cohere_api_key)
 
+# Helper function to format responses for better readability
+def format_response(response):
+    sections = response.split("\n")
+    formatted = ""
+    for section in sections:
+        if ":" in section:
+            formatted += f"<b>{section.split(':')[0]}:</b> {section.split(':')[1]}<br>"
+        else:
+            formatted += f"{section}<br>"
+    return formatted.strip()
+
+
 # Function to search for a nested key in JSON
 def find_nested_key(json_obj, search_key):
     if isinstance(json_obj, dict):
@@ -151,7 +163,7 @@ def analyze():
                  f"{asteroid_details}\n"
                  "Provide short and precise steps"
             )
-            mining_instructions_text = generate_response(mining_prompt, max_tokens=3)
+            mining_instructions_text = format_response(generate_response(mining_prompt, max_tokens=300))
 
             # Generate mining recommendation
             recommendation_prompt = (
@@ -159,7 +171,7 @@ def analyze():
                 f"{asteroid_details}\n"
                 "Suggest the best technologies and methods for efficient mining."
             )
-            mining_recommendation_text = generate_response(recommendation_prompt, max_tokens=3)
+            mining_recommendation_text = format_response(generate_response(recommendation_prompt, max_tokens=300))
 
             return render_template(
                 "index.html",
