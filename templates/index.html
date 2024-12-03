@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AsteroMiner AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='composition.css') }}">
 </head>
 
 <body class="bg-black text-white">
-
     <div class="container">
         <div class="content">
             <div class="intro grid">
@@ -90,9 +90,74 @@
                 <p>{{ mining_recommendation|safe }}</p>
             </div>
             {% endif %}
+
+            <!-- Composition Analysis Section -->
+            <div class="container">
+                <h1>Element Composition Analysis</h1>
+                <div class="chart-wrapper">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                const spkID = "{{ spk_id }}"; // Assign Flask variable to a JS variable
+                console.log("SPK ID from Flask:", spkID);
+
+                // Fetch composition data from Flask route
+                fetch("/get-composition", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ spk_id: spkID }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === "success") {
+                            const composition = data.data;
+
+                            // Prepare data for the chart
+                            const labels = Object.keys(composition);
+                            const values = Object.values(composition);
+
+                            // Create a bar chart
+                            const ctx = document.getElementById("barChart").getContext("2d");
+                            new Chart(ctx, {
+                                type: "bar",
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: "Element Composition",
+                                        data: values,
+                                        backgroundColor: "rgba(168, 85, 247, 0.5)",
+                                        borderColor: "rgba(168, 85, 247, 1)",
+                                        borderWidth: 1,
+                                    }],
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            display: true,
+                                        },
+                                    },
+                                },
+                            });
+
+                            // Display a legend dynamically
+                            const legend = document.getElementById("legend");
+                            labels.forEach((label, index) => {
+                                const color = "rgba(168, 85, 247, 0.5)";
+                                legend.innerHTML += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                    <div style="width: 20px; height: 20px; background-color: ${color}; margin-right: 10px;"></div>
+                                    <span>${label}: ${values[index]}</span>
+                                </div>`;
+                            });
+                        } else {
+                            console.error("Error fetching composition:", data.message);
+                        }
+                    })
+                    .catch(error => console.error("Fetch error:", error));
+            </script>
         </div>
     </div>
-
 </body>
-
 </html>

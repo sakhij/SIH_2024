@@ -1,17 +1,21 @@
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request,jsonify
 import cohere
 import pandas as pd
 from scipy.spatial import KDTree
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 import requests
+import json
 
 app = Flask(__name__)
 
 # Initialize Cohere with your API key
 cohere_api_key = "Zppye9OdNDcXgkNIhaAVlvbFNzBnDmX6A095XOJK"
 co = cohere.Client(cohere_api_key)
+
+with open('asteroid_compositions_from_ecocell.json') as f:
+    data = json.load(f)
 
 # Helper function to format responses for better readability
 def format_response(response):
@@ -79,6 +83,16 @@ def generate_response(prompt, max_tokens):
 def index():
     return render_template("index.html")
 
+@app.route('/get-composition', methods=['POST'])
+def get_composition():
+    spk_id = request.json.get('spk_id')
+    
+    if spk_id in data:
+        composition = data[spk_id]
+        return jsonify({"status": "success", "data": composition})
+    else:
+        return jsonify({"status": "error", "message": "SPK ID not found"})
+
 @app.route("/analyze", methods=["POST"])
 def analyze():
     absolute_magnitude = request.form["absolute_magnitude"]
@@ -137,7 +151,7 @@ def analyze():
             asteroid_details = {
                 "Name": name or 'N/A',
                 "ShortName": short_name or 'N/A',
-                "SPK-ID": spk_id,
+                "SPKID": spk_id,
                 "OrbitClass": orbit_class or 'N/A',
                 "pha": pha or 'N/A',
                 "OrbitID": orbit_id or 'N/A',
@@ -178,7 +192,8 @@ def analyze():
                 asteroid_details=asteroid_details,
                 mining_instructions=mining_instructions_text,
                 mining_recommendation=mining_recommendation_text,
-                decoded_class=decoded_class
+                decoded_class=decoded_class, 
+                spk_id=asteroid_details['SPKID']
             )
         else:
             return render_template("index.html", error_message="No data found for the given SPK-ID.")
