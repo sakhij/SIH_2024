@@ -83,13 +83,20 @@
                     <h3>Mining Instructions</h3>
                     <p>{{ mining_instructions|safe }}</p>
                 </div>
-                <!-- Composition Analysis Section -->
-            <div class="container">
-                <h1>Element Composition Analysis</h1>
-                <div class="chart-wrapper">
-                    <canvas id="barChart"></canvas>
+            </div>
+
+                    <!-- Composition Analysis Section -->
+            <div class="container" style="width: 100%; height: 100vh; display: flex; flex-direction: column;">
+                <h1 style="text-align: center;">Element Composition Analysis</h1>
+                <div class="chart-wrapper" style="display: flex; flex-direction: row; flex-grow: 1;">
+                    <div style="flex: 3; display: flex; align-items: center; justify-content: center;">
+                        <canvas id="barChart" style="max-width: 100%; max-height: 90%;"></canvas>
+                    </div>
+                    <div id="legend" style="flex: 1; margin-left: 20px; display: flex; flex-direction: row; flex-wrap: wrap; align-items: flex-start;">
+                    </div>
                 </div>
             </div>
+
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
             <script>
                 const spkID = "{{ spk_id }}"; // Assign Flask variable to a JS variable
@@ -101,55 +108,70 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ spk_id: spkID }),
                 })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === "success") {
-                            const composition = data.data;
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        let composition = data.data;
 
-                            // Prepare data for the chart
-                            const labels = Object.keys(composition);
-                            const values = Object.values(composition);
+                        // Sort composition data by values in ascending order
+                        const sortedComposition = Object.entries(composition).sort(([, a], [, b]) => a - b);
 
-                            // Create a bar chart
-                            const ctx = document.getElementById("barChart").getContext("2d");
-                            new Chart(ctx, {
-                                type: "bar",
-                                data: {
-                                    labels: labels,
-                                    datasets: [{
-                                        label: "Element Composition",
-                                        data: values,
-                                        backgroundColor: "rgba(168, 85, 247, 0.5)",
-                                        borderColor: "rgba(168, 85, 247, 1)",
-                                        borderWidth: 1,
-                                    }],
-                                },
-                                options: {
-                                    responsive: true,
-                                    plugins: {
-                                        legend: {
-                                            display: true,
-                                        },
+                        // Prepare data for the chart
+                        const labels = sortedComposition.map(([key]) => key);
+                        const values = sortedComposition.map(([, value]) => value);
+
+                        // Generate distinct, toned-down colors for each bar
+                        const colors = values.map((_, index) => `hsl(${(index / values.length) * 360}, 50%, 70%)`);
+
+                        // Create a bar chart
+                        const ctx = document.getElementById("barChart").getContext("2d");
+                        new Chart(ctx, {
+                            type: "bar",
+                            data: {
+                                labels: labels,
+                                datasets: [{
+                                    label: "Element Composition",
+                                    data: values,
+                                    backgroundColor: colors,
+                                    borderColor: colors.map(color => color.replace("70%", "50%")), // Slightly darker border
+                                    borderWidth: 1,
+                                }],
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false, // Disable the default legend
                                     },
                                 },
-                            });
+                                scales: {
+                                    x: { ticks: { autoSkip: false } },
+                                },
+                            },
+                        });
 
-                            // Display a legend dynamically
-                            const legend = document.getElementById("legend");
-                            labels.forEach((label, index) => {
-                                const color = "rgba(168, 85, 247, 0.5)";
-                                legend.innerHTML += `<div style="display: flex; align-items: center; margin-bottom: 5px;">
-                                    <div style="width: 20px; height: 20px; background-color: ${color}; margin-right: 10px;"></div>
-                                    <span>${label}: ${values[index]}</span>
-                                </div>`;
-                            });
-                        } else {
-                            console.error("Error fetching composition:", data.message);
-                        }
-                    })
-                    .catch(error => console.error("Fetch error:", error));
+                        // Create a custom legend on the right-hand side
+                        const legend = document.getElementById("legend");
+                        labels.forEach((label, index) => {
+                            const color = colors[index];
+                            const legendItem = document.createElement("div");
+                            legendItem.style.display = "flex";
+                            legendItem.style.alignItems = "center";
+                            legendItem.style.marginBottom = "10px";
+                            legendItem.style.flexBasis = "50%"; // Two items per row
+                            legendItem.innerHTML = `
+                                <div style="width: 20px; height: 20px; background-color: ${color}; margin-right: 10px; border: 1px solid ${color.replace("70%", "50%")}"></div>
+                                <span>${label}: ${values[index]}</span>
+                            `;
+                            legend.appendChild(legendItem);
+                        });
+                    } else {
+                        console.error("Error fetching composition:", data.message);
+                    }
+                })
+                .catch(error => console.error("Fetch error:", error));
             </script>
-            </div>
 
             <div class="card scrollable">
                 <h3>Mining Recommendation</h3>
@@ -168,9 +190,126 @@
                 <p>Precious Metals: {{ benefits['precious_metals']['mass'] }} tons (valued at ${{ benefits['precious_metals']['value_range'][0] }} - ${{ benefits['precious_metals']['value_range'][1] }} billion)</p>
                 <p>Organic Compounds: {{ benefits['organic_compounds']['mass'] }} million tons (valued at ${{ benefits['organic_compounds']['value_range'][0] }} - ${{ benefits['organic_compounds']['value_range'][1] }} billion)</p>
                 <p><h4>Total Estimated Value: ${{ benefits['total_value_range'][0] }} - ${{ benefits['total_value_range'][1] }} billion</h4></p>
-                
-                
             </div>
+            <div class="container">
+                <h1>Mission Cost and Revenue Analysis</h1>
+                <div class="chart-wrapper">
+                    <canvas id="missionChart"></canvas> <!-- Canvas for Mission Cost -->
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="revenueChart"></canvas> <!-- Canvas for Revenue -->
+                </div>
+            </div>
+            
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+            <script>
+                // Fetch mission data from Flask route
+                fetch("/get-mission-data", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ spk_id: spkID }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        const missionCost = data.data.mission_cost;
+                        const benefits = data.data.benefits;
+            
+                        // Log the data to the console
+                        console.log("Mission Cost Details:", missionCost);
+                        console.log("Estimated Benefits:", benefits);
+            
+                        // Check if benefits and total_value_range are properly defined
+                        if (benefits && benefits.total_value_range && benefits.total_value_range.length === 2) {
+                            // Prepare data for the bar chart
+                            const categories = [
+                                'Design Cost', 
+                                'Development & Launch Cost', 
+                                'Capture & Processing Cost', 
+                                'Total Mission Cost', 
+                                'Total Estimated Revenue'
+                            ];
+            
+                            const missionValues = [
+                                missionCost.design_cost,
+                                missionCost.dev_cost + missionCost.launch_cost,
+                                missionCost.capture_cost + missionCost.process_cost,
+                                missionCost.total_cost,
+                                benefits.total_value_range[1]  // Total Revenue from benefits
+                            ];
+            
+                            // Function to calculate the median of an array
+                            function calculateMedian(arr) {
+                                const sortedArr = arr.slice().sort((a, b) => a - b); // Sort the array
+                                const middle = Math.floor(sortedArr.length / 2);
+                                if (sortedArr.length % 2 === 0) {
+                                    return (sortedArr[middle - 1] + sortedArr[middle]) / 2;
+                                } else {
+                                    return sortedArr[middle];
+                                }
+                            }
+            
+                            // Calculate the median for mission cost and total estimated revenue
+                            const medianMissionCost = calculateMedian([
+                                missionCost.design_cost,
+                                missionCost.dev_cost + missionCost.launch_cost,
+                                missionCost.capture_cost + missionCost.process_cost,
+                                missionCost.total_cost
+                            ]);
+                            const medianRevenue = calculateMedian(benefits.total_value_range);
+            
+                            // Prepare the values for the bar chart with median values
+                            const medianValues = [
+                                medianMissionCost,  // Median Mission Cost
+                                medianRevenue       // Median Total Estimated Revenue
+                            ];
+            
+                            // Create the bar chart for median Mission Cost and Revenue
+                            const ctx = document.getElementById("missionChart").getContext("2d");
+                            new Chart(ctx, {
+                                type: "bar",
+                                data: {
+                                    labels: ['Median Mission Cost', 'Median Estimated Revenue'],
+                                    datasets: [{
+                                        label: "Mission Cost & Revenue (Million USD)",
+                                        data: medianValues,
+                                        backgroundColor: [
+                                            "rgba(255, 99, 132, 0.5)",  // Mission Cost
+                                            "rgba(75, 192, 192, 0.5)"   // Estimated Revenue
+                                        ],
+                                        borderColor: [
+                                            "rgba(255, 99, 132, 1)",  // Mission Cost
+                                            "rgba(75, 192, 192, 1)"   // Estimated Revenue
+                                        ],
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    plugins: {
+                                        legend: {
+                                            display: true
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: function(tooltipItem) {
+                                                    return "$" + tooltipItem.raw.toFixed(2) + " million";
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            console.error("Error: benefits.total_value_range is not properly defined.");
+                        }
+            
+                    } else {
+                        console.error("Error fetching mission data:", data.message);
+                    }
+                })
+                .catch(error => console.error("Fetch error:", error));
+            </script>                    
             
             {% endif %}
         </div>
