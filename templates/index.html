@@ -89,6 +89,23 @@
                 <h3>Mining Recommendation</h3>
                 <p>{{ mining_recommendation|safe }}</p>
             </div>
+
+            <div class="card scrollable">
+                <h3>Mission Cost Estimation</h3>
+                <p>Mission Design and Planning Cost: ${{ mission_cost['design_cost'] }} million</p>
+                <p>Spacecraft Development and Launch Cost: ${{ mission_cost['dev_cost'] + mission_cost['launch_cost'] }} million</p>
+                <p>Asteroid Capture and Processing Cost: ${{ mission_cost['capture_cost'] + mission_cost['process_cost'] }} million</p>
+                <p><h4>Total Mission Cost: ${{ mission_cost['total_cost'] }} million</h4></p>
+                
+                <h3>Estimated Benefits</h3>
+                <p>Water Ice: {{ benefits['water_ice']['mass'] }} million tons (valued at ${{ benefits['water_ice']['value_range'][0] }} - ${{ benefits['water_ice']['value_range'][1] }} billion)</p>
+                <p>Precious Metals: {{ benefits['precious_metals']['mass'] }} tons (valued at ${{ benefits['precious_metals']['value_range'][0] }} - ${{ benefits['precious_metals']['value_range'][1] }} billion)</p>
+                <p>Organic Compounds: {{ benefits['organic_compounds']['mass'] }} million tons (valued at ${{ benefits['organic_compounds']['value_range'][0] }} - ${{ benefits['organic_compounds']['value_range'][1] }} billion)</p>
+                <p><h4>Total Estimated Value: ${{ benefits['total_value_range'][0] }} - ${{ benefits['total_value_range'][1] }} billion</h4></p>
+                
+                
+            </div>
+            
             {% endif %}
 
             <!-- Composition Analysis Section -->

@@ -14,7 +14,7 @@ app = Flask(__name__)
 cohere_api_key = "Zppye9OdNDcXgkNIhaAVlvbFNzBnDmX6A095XOJK"
 co = cohere.Client(cohere_api_key)
 
-with open('asteroid_compositions_from_ecocell.json') as f:
+with open('C:\\Users\\Muskan\\Desktop\\Astrominer-AI\\SIH_2024\\asteroid_compositions_from_ecocell.json') as f:
     data = json.load(f)
 
 # Helper function to format responses for better readability
@@ -101,7 +101,7 @@ def analyze():
     aphelion_distance = request.form["aphelion_distance"]
 
     # Load your dataset for KDTree search
-    csv_file = "updated_dataset_main.csv"  # Replace with the path to your dataset
+    csv_file = "C:\\Users\\Muskan\\Desktop\\Astrominer-AI\\SIH_2024\\updated_dataset_main.csv"  # Replace with the path to your dataset
     df = pd.read_csv(csv_file)
 
     columns_to_search = ["albedo", "H", "e", "ad", "main_class"]
@@ -171,6 +171,75 @@ def analyze():
                 'args':orbital_elements['argument of perihelion']
             }
             print(asteroid_details)
+            print("\nMission Cost Estimation:")
+
+            # Mission Design and Planning Cost
+            f_orbit = 1 + float(orbital_elements.get("eccentricity", 0)) + (float(orbital_elements.get("inclination", 0)) / 10)
+            design_cost = 500 * f_orbit  # $500 million base
+            
+            if effective_diameter == "N/A":
+                effective_diameter = 100.0  # Assume a default effective diameter in km
+            else:
+                effective_diameter = float(effective_diameter)
+            
+            # Spacecraft Development and Launch Cost
+            dev_cost = float(effective_diameter) * 10  # $10 million per km
+            launch_cost = 3_000  # Assumed $3 billion for simplicity
+
+            if bulk_density != "N/A":
+                bulk_density = float(bulk_density)
+            else:
+                if decoded_class == "C-type":
+                    bulk_density = 1300  # kg/m^3 (carbonaceous)
+                elif decoded_class == "S-type":
+                    bulk_density = 2700  # kg/m^3 (silicate-rich)
+                elif decoded_class == "M-type":
+                    bulk_density = 7000  # kg/m^3 (metallic)
+                else:
+                    bulk_density = 2700  # Default to S-type
+
+            # Asteroid Capture and Processing Cost
+            capture_cost = 2_000  # Assumed $2 billion for capture
+            process_cost = float(bulk_density) * (1 / float(geometric_albedo)) * 10  # $10 million per unit
+
+            total_cost = design_cost + dev_cost + launch_cost + capture_cost + process_cost
+
+            print(f"Mission Design and Planning Cost: ${design_cost:.2f} million")
+            print(f"Spacecraft Development and Launch Cost: ${dev_cost + launch_cost:.2f} million")
+            print(f"Asteroid Capture and Processing Cost: ${capture_cost + process_cost:.2f} million")
+            print(f"Total Mission Cost: ${total_cost:.2f} million")
+
+            # Estimated Benefits Calculation
+            print("\nEstimated Benefits:")
+
+            # Calculate the mass of the asteroid
+            radius = (float(effective_diameter) / 2) * 1e3  # Convert effective diameter to radius in meters
+            volume_mined = (4/3) * np.pi * (radius**3)  # Volume in cubic meters
+
+            # Calculate mass of asteroid
+            mass_of_asteroid = bulk_density * volume_mined  # Mass in kg
+
+            # Water Ice (5% of mass)
+            water_ice_mass = 0.05 * mass_of_asteroid  # in kg
+            water_ice_value_range = (water_ice_mass * 10**-9 * 10, water_ice_mass * 10**-9 * 30)  # in billion USD
+            print(f"Water Ice: {water_ice_mass * 10**-9:.2f} million tons (valued at ${water_ice_value_range[0]:.2f} - ${water_ice_value_range[1]:.2f} billion)")
+
+            # Precious Metals (10% of mass)
+            precious_metals_mass = 0.1 * mass_of_asteroid  # in kg
+            precious_metals_value_range = (precious_metals_mass * 10**-6 * 5, precious_metals_mass * 10**-6 * 15)  # in billion USD
+            print(f"Precious metals: {precious_metals_mass * 10**-6:.2f} tons (valued at ${precious_metals_value_range[0]:.2f} - ${precious_metals_value_range[1]:.2f} billion)")
+
+            # Organic Compounds (1% of mass)
+            organic_compounds_mass = 0.01 * mass_of_asteroid  # in kg
+            organic_compounds_value_range = (organic_compounds_mass * 10**-9 * 1, organic_compounds_mass * 10**-9 * 3)  # in billion USD
+            print(f"Organic Compounds: {organic_compounds_mass * 10**-9:.2f} million tons (valued at ${organic_compounds_value_range[0]:.2f} - ${organic_compounds_value_range[1]:.2f} billion)")
+
+            # Total Value Range
+            total_value_range = (
+                water_ice_value_range[0] + precious_metals_value_range[0] + organic_compounds_value_range[0],
+                water_ice_value_range[1] + precious_metals_value_range[1] + organic_compounds_value_range[1]
+            )
+            print(f"Total estimated value: ${total_value_range[0]:.2f} - ${total_value_range[1]:.2f} billion")
             # Generate mining instructions
             mining_prompt = (
                  f"Provide a detailed step-by-step guide for safely traveling to and mining an asteroid based on the following details:\n"
@@ -192,6 +261,29 @@ def analyze():
                 asteroid_details=asteroid_details,
                 mining_instructions=mining_instructions_text,
                 mining_recommendation=mining_recommendation_text,
+               mission_cost={
+                    "design_cost": design_cost,
+                    "dev_cost": dev_cost,
+                    "launch_cost": launch_cost,
+                    "capture_cost": capture_cost,
+                    "process_cost": process_cost,
+                    "total_cost": total_cost
+                },
+                benefits={
+                    "water_ice": {
+                        "mass": water_ice_mass * 10**-9,
+                        "value_range": water_ice_value_range
+                    },
+                    "precious_metals": {
+                        "mass": precious_metals_mass * 10**-6,
+                        "value_range": precious_metals_value_range
+                    },
+                    "organic_compounds": {
+                        "mass": organic_compounds_mass * 10**-9,
+                        "value_range": organic_compounds_value_range
+                    },
+                    "total_value_range": total_value_range
+                },
                 decoded_class=decoded_class, 
                 spk_id=asteroid_details['SPKID']
             )
