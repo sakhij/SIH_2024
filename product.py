@@ -21,6 +21,9 @@ csv_file = "updated_dataset_main.csv"  # Replace with the path to your dataset
 # Load your dataset for KDTree search
 df = pd.read_csv(csv_file)
 
+global decoded_class
+global asteroid_details
+
 # Helper function to format responses for better readability
 def format_response(response):
     sections = response.split("\n")
@@ -102,6 +105,8 @@ def get_composition():
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
+    global decoded_class
+    global asteroid_details
     absolute_magnitude = request.form["absolute_magnitude"]
     albedo = request.form["albedo"]
     eccentricity = request.form["eccentricity"]
@@ -249,7 +254,7 @@ def analyze():
                  f"{asteroid_details}\n"
                  "Provide short and precise steps"
             )
-            mining_instructions_text = format_response(generate_response(mining_prompt, max_tokens=300))
+            mining_instructions_text = format_response(generate_response(mining_prompt, max_tokens=3))
 
             # Generate mining recommendation
             recommendation_prompt = (
@@ -257,7 +262,7 @@ def analyze():
                 f"{asteroid_details}\n"
                 "Suggest the best technologies and methods for efficient mining."
             )
-            mining_recommendation_text = format_response(generate_response(recommendation_prompt, max_tokens=300))
+            mining_recommendation_text = format_response(generate_response(recommendation_prompt, max_tokens=3))
 
             return render_template(
                 "index.html",
@@ -294,6 +299,116 @@ def analyze():
             return render_template("index.html", error_message="No data found for the given SPK-ID.")
     else:
         return render_template("index.html", error_message="Failed to fetch data from NASA API. HTTP Status Code: " + str(response.status_code))
+
+@app.route("/get-mission-data", methods=["POST"])
+def get_mission_data():
+    global asteroid_details
+
+    print("\nMission Cost Estimation:")
+
+    # Mission Design and Planning Cost
+    f_orbit = 1 + float(asteroid_details["eccentricity"]) + (float(asteroid_details["inclination"]) / 10)
+    design_cost = 500 * f_orbit  # $500 million base
+    effective_diameter=asteroid_details["dia"]
+    bulk_density=asteroid_details["BulkDensity"]
+    geometric_albedo=asteroid_details["Albedo"]
+    global decoded_class
+    
+
+    if effective_diameter == "N/A":
+        effective_diameter = 100.0  # Assume a default effective diameter in km
+    else:
+        effective_diameter = float(effective_diameter)
+    
+    # Spacecraft Development and Launch Cost
+    dev_cost = float(effective_diameter) * 10  # $10 million per km
+    launch_cost = 3_000  # Assumed $3 billion for simplicity
+
+    if bulk_density != "N/A":
+        bulk_density = float(bulk_density)
+    else:
+        if decoded_class == "C-type":
+            bulk_density = 1300  # kg/m^3 (carbonaceous)
+        elif decoded_class == "S-type":
+            bulk_density = 2700  # kg/m^3 (silicate-rich)
+        elif decoded_class == "M-type":
+            bulk_density = 7000  # kg/m^3 (metallic)
+        else:
+            bulk_density = 2700  # Default to S-type
+
+    # Asteroid Capture and Processing Cost
+    capture_cost = 2_000  # Assumed $2 billion for capture
+    process_cost = float(bulk_density) * (1 / float(geometric_albedo)) * 10  # $10 million per unit
+
+    total_cost = design_cost + dev_cost + launch_cost + capture_cost + process_cost
+
+    print(f"Mission Design and Planning Cost: ${design_cost:.2f} million")
+    print(f"Spacecraft Development and Launch Cost: ${dev_cost + launch_cost:.2f} million")
+    print(f"Asteroid Capture and Processing Cost: ${capture_cost + process_cost:.2f} million")
+    print(f"Total Mission Cost: ${total_cost:.2f} million")
+
+    # Estimated Benefits Calculation
+    print("\nEstimated Benefits:")
+
+    # Calculate the mass of the asteroid
+    radius = (float(effective_diameter) / 2) * 1e3  # Convert effective diameter to radius in meters
+    volume_mined = (4/3) * np.pi * (radius**3)  # Volume in cubic meters
+
+    # Calculate mass of asteroid
+    mass_of_asteroid = bulk_density * volume_mined  # Mass in kg
+
+    # Water Ice (5% of mass)
+    water_ice_mass = 0.05 * mass_of_asteroid  # in kg
+    water_ice_value_range = (water_ice_mass * 10**-9 * 10, water_ice_mass * 10**-9 * 30)  # in billion USD
+    print(f"Water Ice: {water_ice_mass * 10**-9:.2f} million tons (valued at ${water_ice_value_range[0]:.2f} - ${water_ice_value_range[1]:.2f} billion)")
+
+    # Precious Metals (10% of mass)
+    precious_metals_mass = 0.1 * mass_of_asteroid  # in kg
+    precious_metals_value_range = (precious_metals_mass * 10**-6 * 5, precious_metals_mass * 10**-6 * 15)  # in billion USD
+    print(f"Precious metals: {precious_metals_mass * 10**-6:.2f} tons (valued at ${precious_metals_value_range[0]:.2f} - ${precious_metals_value_range[1]:.2f} billion)")
+
+    # Organic Compounds (1% of mass)
+    organic_compounds_mass = 0.01 * mass_of_asteroid  # in kg
+    organic_compounds_value_range = (organic_compounds_mass * 10**-9 * 1, organic_compounds_mass * 10**-9 * 3)  # in billion USD
+    print(f"Organic Compounds: {organic_compounds_mass * 10**-9:.2f} million tons (valued at ${organic_compounds_value_range[0]:.2f} - ${organic_compounds_value_range[1]:.2f} billion)")
+
+    # Total Value Range
+    total_value_range = (
+        water_ice_value_range[0] + precious_metals_value_range[0] + organic_compounds_value_range[0],
+        water_ice_value_range[1] + precious_metals_value_range[1] + organic_compounds_value_range[1]
+    )
+    print(f"Total estimated value: ${total_value_range[0]:.2f} - ${total_value_range[1]:.2f} billion")
+    
+    mission_cost={
+        "design_cost": design_cost,
+        "dev_cost": dev_cost,
+        "launch_cost": launch_cost,
+        "capture_cost": capture_cost,
+        "process_cost": process_cost,
+        "total_cost": total_cost
+    },
+    benefits={
+        "water_ice": {
+            "mass": water_ice_mass * 10**-9,
+            "value_range": water_ice_value_range
+        },
+        "precious_metals": {
+            "mass": precious_metals_mass * 10**-6,
+            "value_range": precious_metals_value_range
+        },
+        "organic_compounds": {
+            "mass": organic_compounds_mass * 10**-9,
+            "value_range": organic_compounds_value_range
+        },
+        "total_value_range": total_value_range
+    }
+    return jsonify({
+        "status": "success",
+        "data": {
+            "mission_cost": mission_cost,
+            "benefits": benefits
+        }
+    })
 
 if __name__ == "__main__":
     app.run(debug=True)
