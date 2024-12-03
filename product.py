@@ -14,8 +14,12 @@ app = Flask(__name__)
 cohere_api_key = "Zppye9OdNDcXgkNIhaAVlvbFNzBnDmX6A095XOJK"
 co = cohere.Client(cohere_api_key)
 
-with open('C:\\Users\\Muskan\\Desktop\\Astrominer-AI\\SIH_2024\\asteroid_compositions_from_ecocell.json') as f:
-    data = json.load(f)
+with open('asteroid_compositions_from_ecocell.json') as f:
+    compo = json.load(f)
+
+csv_file = "updated_dataset_main.csv"  # Replace with the path to your dataset
+# Load your dataset for KDTree search
+df = pd.read_csv(csv_file)
 
 # Helper function to format responses for better readability
 def format_response(response):
@@ -86,9 +90,12 @@ def index():
 @app.route('/get-composition', methods=['POST'])
 def get_composition():
     spk_id = request.json.get('spk_id')
+    print(spk_id in compo)
     
-    if spk_id in data:
-        composition = data[spk_id]
+    if spk_id in compo:
+        composition = compo[spk_id]
+        print(f"Composition for SPK ID {spk_id}:")
+        print(composition)
         return jsonify({"status": "success", "data": composition})
     else:
         return jsonify({"status": "error", "message": "SPK ID not found"})
@@ -99,10 +106,6 @@ def analyze():
     albedo = request.form["albedo"]
     eccentricity = request.form["eccentricity"]
     aphelion_distance = request.form["aphelion_distance"]
-
-    # Load your dataset for KDTree search
-    csv_file = "C:\\Users\\Muskan\\Desktop\\Astrominer-AI\\SIH_2024\\updated_dataset_main.csv"  # Replace with the path to your dataset
-    df = pd.read_csv(csv_file)
 
     columns_to_search = ["albedo", "H", "e", "ad", "main_class"]
     spk_id_column = "spkid"
