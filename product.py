@@ -179,7 +179,6 @@ def analyze():
                 'args':orbital_elements['argument of perihelion']
             }
             print(asteroid_details)
-            print("\nMission Cost Estimation:")
 
             # Mission Design and Planning Cost
             f_orbit = 1 + float(orbital_elements.get("eccentricity", 0)) + (float(orbital_elements.get("inclination", 0)) / 10)
@@ -212,14 +211,7 @@ def analyze():
 
             total_cost = design_cost + dev_cost + launch_cost + capture_cost + process_cost
 
-            print(f"Mission Design and Planning Cost: ${design_cost:.2f} million")
-            print(f"Spacecraft Development and Launch Cost: ${dev_cost + launch_cost:.2f} million")
-            print(f"Asteroid Capture and Processing Cost: ${capture_cost + process_cost:.2f} million")
-            print(f"Total Mission Cost: ${total_cost:.2f} million")
-
             # Estimated Benefits Calculation
-            print("\nEstimated Benefits:")
-
             # Calculate the mass of the asteroid
             radius = (float(effective_diameter) / 2) * 1e3  # Convert effective diameter to radius in meters
             volume_mined = (4/3) * np.pi * (radius**3)  # Volume in cubic meters
@@ -230,24 +222,21 @@ def analyze():
             # Water Ice (5% of mass)
             water_ice_mass = 0.05 * mass_of_asteroid  # in kg
             water_ice_value_range = (water_ice_mass * 10**-9 * 10, water_ice_mass * 10**-9 * 30)  # in billion USD
-            print(f"Water Ice: {water_ice_mass * 10**-9:.2f} million tons (valued at ${water_ice_value_range[0]:.2f} - ${water_ice_value_range[1]:.2f} billion)")
 
             # Precious Metals (10% of mass)
             precious_metals_mass = 0.1 * mass_of_asteroid  # in kg
             precious_metals_value_range = (precious_metals_mass * 10**-6 * 5, precious_metals_mass * 10**-6 * 15)  # in billion USD
-            print(f"Precious metals: {precious_metals_mass * 10**-6:.2f} tons (valued at ${precious_metals_value_range[0]:.2f} - ${precious_metals_value_range[1]:.2f} billion)")
-
             # Organic Compounds (1% of mass)
             organic_compounds_mass = 0.01 * mass_of_asteroid  # in kg
             organic_compounds_value_range = (organic_compounds_mass * 10**-9 * 1, organic_compounds_mass * 10**-9 * 3)  # in billion USD
-            print(f"Organic Compounds: {organic_compounds_mass * 10**-9:.2f} million tons (valued at ${organic_compounds_value_range[0]:.2f} - ${organic_compounds_value_range[1]:.2f} billion)")
-
             # Total Value Range
             total_value_range = (
                 water_ice_value_range[0] + precious_metals_value_range[0] + organic_compounds_value_range[0],
                 water_ice_value_range[1] + precious_metals_value_range[1] + organic_compounds_value_range[1]
             )
-            print(f"Total estimated value: ${total_value_range[0]:.2f} - ${total_value_range[1]:.2f} billion")
+            total_value_range_quadrillion = (total_value_range[0] / 1_000_000, total_value_range[1] / 1_000)
+
+
             # Generate mining instructions
             mining_prompt = (
                  f"Provide a detailed step-by-step guide for safely traveling to and mining an asteroid based on the following details:\n"
@@ -290,7 +279,7 @@ def analyze():
                         "mass": organic_compounds_mass * 10**-9,
                         "value_range": organic_compounds_value_range
                     },
-                    "total_value_range": total_value_range
+                    "total_value_range": total_value_range_quadrillion
                 },
                 decoded_class=decoded_class, 
                 spk_id=asteroid_details['SPKID']
@@ -302,6 +291,7 @@ def analyze():
 
 @app.route("/get-mission-data", methods=["POST"])
 def get_mission_data():
+    print('hi')
     global asteroid_details
 
     print("\nMission Cost Estimation:")
@@ -360,24 +350,27 @@ def get_mission_data():
     # Water Ice (5% of mass)
     water_ice_mass = 0.05 * mass_of_asteroid  # in kg
     water_ice_value_range = (water_ice_mass * 10**-9 * 10, water_ice_mass * 10**-9 * 30)  # in billion USD
-    print(f"Water Ice: {water_ice_mass * 10**-9:.2f} million tons (valued at ${water_ice_value_range[0]:.2f} - ${water_ice_value_range[1]:.2f} billion)")
+    print(f"Water Ice: {water_ice_mass * 10**-9} million tons (valued at ${water_ice_value_range[0]} - ${water_ice_value_range[1]} billion)")
 
     # Precious Metals (10% of mass)
     precious_metals_mass = 0.1 * mass_of_asteroid  # in kg
     precious_metals_value_range = (precious_metals_mass * 10**-6 * 5, precious_metals_mass * 10**-6 * 15)  # in billion USD
-    print(f"Precious metals: {precious_metals_mass * 10**-6:.2f} tons (valued at ${precious_metals_value_range[0]:.2f} - ${precious_metals_value_range[1]:.2f} billion)")
+    print(f"Precious metals: {precious_metals_mass * 10**-6} tons (valued at ${precious_metals_value_range[0]} - ${precious_metals_value_range[1]} billion)")
 
     # Organic Compounds (1% of mass)
     organic_compounds_mass = 0.01 * mass_of_asteroid  # in kg
     organic_compounds_value_range = (organic_compounds_mass * 10**-9 * 1, organic_compounds_mass * 10**-9 * 3)  # in billion USD
-    print(f"Organic Compounds: {organic_compounds_mass * 10**-9:.2f} million tons (valued at ${organic_compounds_value_range[0]:.2f} - ${organic_compounds_value_range[1]:.2f} billion)")
+    print(f"Organic Compounds: {organic_compounds_mass * 10**-9} million tons (valued at ${organic_compounds_value_range[0]} - ${organic_compounds_value_range[1]} billion)")
 
     # Total Value Range
     total_value_range = (
         water_ice_value_range[0] + precious_metals_value_range[0] + organic_compounds_value_range[0],
         water_ice_value_range[1] + precious_metals_value_range[1] + organic_compounds_value_range[1]
     )
-    print(f"Total estimated value: ${total_value_range[0]:.2f} - ${total_value_range[1]:.2f} billion")
+    print(f"Total estimated value: ${total_value_range[0]} - ${total_value_range[1]} billion")
+
+    total_value_range_quadrillion = (total_value_range[0] / 1_000_000, total_value_range[1] / 1_000)
+    print(f"Total estimated value: ${total_value_range_quadrillion[0]} - ${total_value_range_quadrillion[1]} quadrillion")
     
     mission_cost={
         "design_cost": design_cost,
@@ -400,7 +393,7 @@ def get_mission_data():
             "mass": organic_compounds_mass * 10**-9,
             "value_range": organic_compounds_value_range
         },
-        "total_value_range": total_value_range
+        "total_value_range": total_value_range_quadrillion
     }
     return jsonify({
         "status": "success",
