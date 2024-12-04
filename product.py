@@ -12,6 +12,7 @@ app = Flask(__name__)
 
 # Initialize Cohere with your API key
 cohere_api_key = "Zppye9OdNDcXgkNIhaAVlvbFNzBnDmX6A095XOJK"
+#cohere_api_key = "bWAmXD1sME2U2Tf4Ulvcp4MpQVpWpDjFENy9e3VN"
 co = cohere.Client(cohere_api_key)
 
 with open('asteroid_compositions_from_ecocell.json') as f:
@@ -243,7 +244,7 @@ def analyze():
                  f"{asteroid_details}\n"
                  "Provide short and precise steps"
             )
-            mining_instructions_text = format_response(generate_response(mining_prompt, max_tokens=3))
+            mining_instructions_text = format_response(generate_response(mining_prompt, max_tokens=300))
 
             # Generate mining recommendation
             recommendation_prompt = (
@@ -251,7 +252,7 @@ def analyze():
                 f"{asteroid_details}\n"
                 "Suggest the best technologies and methods for efficient mining."
             )
-            mining_recommendation_text = format_response(generate_response(recommendation_prompt, max_tokens=3))
+            mining_recommendation_text = format_response(generate_response(recommendation_prompt, max_tokens=300))
 
             return render_template(
                 "index.html",
