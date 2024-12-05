@@ -8,13 +8,16 @@
 /* Body */
 body {
   font-family: 'Arial', sans-serif;
-  background-color: #0d0d0d;
+  background: url('https://i.postimg.cc/4y2kw3mc/unnamed.jpg');
+  background-size: 100% 100%; /* Full width, height adjusts automatically */
+  background-repeat: no-repeat; /* Prevent tiling */
+  background-position: top center;
   color: #f0f0f0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
   overflow-x: hidden;
+  padding: 20px;
 }
 
 /* Container */
@@ -68,6 +71,11 @@ li {
   margin-right: 0.5rem;
 }
 
+.text-content {
+  margin-top: 50px;
+  margin-right: 35px;
+}
+
 /* Form */
 .card {
   background-color: #1e1e1e;
@@ -107,6 +115,18 @@ input[type="text"]:focus {
   outline: none;
   border-color: #a855f7;
   box-shadow: 0 0 5px rgba(168, 85, 247, 0.3);
+}
+
+.textR {
+  mix-blend-mode: difference;
+}
+
+.cardR {
+  background-color: #8f8080;
+}
+
+.graph {
+  margin: auto 20px;
 }
 
 button {

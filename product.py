@@ -244,7 +244,7 @@ def analyze():
                  f"{asteroid_details}\n"
                  "Provide short and precise steps"
             )
-            mining_instructions_text = format_response(generate_response(mining_prompt, max_tokens=300))
+            mining_instructions_text = format_response(generate_response(mining_prompt, max_tokens=500))
 
             # Generate mining recommendation
             recommendation_prompt = (
@@ -252,7 +252,7 @@ def analyze():
                 f"{asteroid_details}\n"
                 "Suggest the best technologies and methods for efficient mining."
             )
-            mining_recommendation_text = format_response(generate_response(recommendation_prompt, max_tokens=300))
+            mining_recommendation_text = format_response(generate_response(recommendation_prompt, max_tokens=500))
 
             return render_template(
                 "index.html",
@@ -298,8 +298,8 @@ def get_mission_data():
     print("\nMission Cost Estimation:")
 
     # Mission Design and Planning Cost
-    f_orbit = 1 + float(asteroid_details["eccentricity"]) + (float(asteroid_details["inclination"]) / 10)
-    design_cost = 500 * f_orbit  # $500 million base
+    
+   
     effective_diameter=asteroid_details["dia"]
     bulk_density=asteroid_details["BulkDensity"]
     geometric_albedo=asteroid_details["Albedo"]
@@ -310,7 +310,8 @@ def get_mission_data():
         effective_diameter = 100.0  # Assume a default effective diameter in km
     else:
         effective_diameter = float(effective_diameter)
-    
+    f_orbit = 1 + float(asteroid_details["eccentricity"]) + (float(asteroid_details["inclination"]) / 10)
+    design_cost = 500 * f_orbit  # $500 million base
     # Spacecraft Development and Launch Cost
     dev_cost = float(effective_diameter) * 10  # $10 million per km
     launch_cost = 3_000  # Assumed $3 billion for simplicity
