@@ -306,7 +306,7 @@ def analyze():
                  f"{asteroid_details}\n"
                  "Provide short and precise steps"
             )
-            mining_instructions_text = format_response(generate_response(mining_prompt, max_tokens=500))
+            mining_instructions_text = format_response(generate_response(mining_prompt, max_tokens=300))
 
             # Generate mining recommendation
             recommendation_prompt = (
