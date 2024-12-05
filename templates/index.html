@@ -36,7 +36,7 @@
 
                 <div class="form-container card">
                     <h2>Asteroid Parameters</h2>
-                    <form method="POST" action="/analyze">
+                    <form id="dataForm" method="POST" action="/analyze">
                         <label for="absolute_magnitude">Absolute Magnitude:</label>
                         <input type="text" id="absolute_magnitude" name="absolute_magnitude" required><br>
 
@@ -51,6 +51,28 @@
 
                         <button type="submit">Analyze</button>
                     </form>
+                    <script>
+                        // Add event listener to the form
+                        document.getElementById("dataForm").addEventListener("submit", function(event) {
+                            // Get input values
+                            const absoluteMagnitude = document.getElementById("absolute_magnitude").value;
+                            const albedo = document.getElementById("albedo").value;
+                            const eccentricity = document.getElementById("eccentricity").value;
+                            const aphelionDistance = document.getElementById("aphelion_distance").value;
+                    
+                            // Validation function
+                            function isNumeric(value) {
+                                return !isNaN(value) && isFinite(value); // Checks if the value is a valid number
+                            }
+                    
+                            // Validate inputs
+                            if (!isNumeric(absoluteMagnitude) || !isNumeric(albedo) || !isNumeric(eccentricity) || !isNumeric(aphelionDistance)) {
+                                alert("Invalid input: All fields must be numeric (int, float, double, or long).");
+                                event.preventDefault(); // Prevent form submission
+                            }
+                        });
+                    </script>
+                    
                 </div>
             </div>
 
