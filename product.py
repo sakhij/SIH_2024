@@ -275,6 +275,12 @@ def analyze():
             total_value_range_quadrillion = (total_value_range[0] / 1_000_000, total_value_range[1] / 1_000_000)
             print(f"Total estimated value in quad: ${total_value_range_quadrillion[0]} - ${total_value_range_quadrillion[1]} quadrillion")
 
+            if total_value_range[0] < 1_000_000:
+                total_value_display = {
+                    "value_range": total_value_range,
+                    "unit": "billion"  # Display in billions
+                }
+
             mission_cost={
                         "design_cost": design_cost,
                         "dev_cost": dev_cost,
@@ -297,7 +303,7 @@ def analyze():
                             "mass": organic_compounds_mass * 10**-9,
                             "value_range": organic_compounds_value_range
                         },
-                        "total_value_range": total_value_range_quadrillion
+                       "total_value_display": total_value_display
                     }
 
             # Generate mining instructions
