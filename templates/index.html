@@ -232,6 +232,7 @@
                                 if (data.status === "success") {
                                     let missionCost = data.data.mission_cost;
                                     const benefits = data.data.benefits;
+                                    console.log(benefits.total_value_range)
                     
                                     if (Array.isArray(missionCost) && missionCost.length > 0) {
                                         missionCost = missionCost[0]; // Extract first element if array
@@ -251,28 +252,39 @@
                                     const missionChartCanvas = document.getElementById("missionChart");
                                     if (missionChartCanvas) {
                                         const ctx = missionChartCanvas.getContext("2d");
+
+                                        // Prepare data for the chart
+                                        const categories = ['Total Mission Cost', 'Total Estimated Revenue'];
+                                        const missionValues = [missionCost.total_cost, benefits.total_value_range[1]];
+
+                                        // Generate distinct, toned-down colors for each bar
+                                        const costColor = "hsl(0, 50%, 70%)"; // Color for Mission Cost
+                                        const costBorderColor = "hsl(0, 70%, 50%)";
+                                        const revenueColor = "hsl(108, 50%, 70%)"; // Color for Revenue
+                                        const revenueBorderColor = "hsl(108, 70%, 50%)";
+
                                         new Chart(ctx, {
                                             type: "bar",
                                             data: {
                                                 labels: categories,
                                                 datasets: [
                                                     {
-                                                        label: "Total Mission Cost in Million USD",
-                                                        data: [missionValues[0]],
-                                                        backgroundColor: "rgba(255, 99, 132, 0.5)", // Color for Mission Cost
-                                                        borderColor: "rgba(255, 99, 132, 1)",
+                                                        label: "Mission Cost in Million USD",
+                                                        data: [missionValues[0], 0], // Mission Cost for the first category
+                                                        backgroundColor: costColor,
+                                                        borderColor: costBorderColor,
                                                         borderWidth: 1,
                                                         barPercentage: 1.3, // Adjust bar width
                                                         categoryPercentage: 0.3, // Adjust gap between bars
                                                     },
                                                     {
-                                                        label: "Total Estimated Revenue in Quadrillion USD",
-                                                        data: [missionValues[1]],
-                                                        backgroundColor: "rgba(75, 192, 192, 0.5)", // Color for Revenue
-                                                        borderColor: "rgba(75, 192, 192, 1)",
+                                                        label: "Revenue in Quadrillion USD",
+                                                        data: [0, missionValues[1]], // Revenue for the second category
+                                                        backgroundColor: revenueColor,
+                                                        borderColor: revenueBorderColor,
                                                         borderWidth: 1,
-                                                        barPercentage: 0.2,
-                                                        categoryPercentage: 3.0,
+                                                        barPercentage: 1.3, // Adjust bar width
+                                                        categoryPercentage: -0.3, // Adjust gap between bars
                                                     }
                                                 ]
                                             },
@@ -280,16 +292,16 @@
                                                 responsive: true,
                                                 plugins: {
                                                     legend: {
-                                                        display: true, // Display legend with labels
+                                                        display: true, // Show legend for both datasets
                                                         position: 'top'
                                                     },
                                                     tooltip: {
                                                         callbacks: {
                                                             label: function (tooltipItem) {
                                                                 if (tooltipItem.datasetIndex === 0) {
-                                                                    return "$" + tooltipItem.raw.toFixed(2) + " million";
+                                                                    return "$" + tooltipItem.raw.toFixed(2) + " million"; // Tooltip for Mission Cost
                                                                 } else {
-                                                                    return "$" + tooltipItem.raw.toFixed(2) + " quadrillion";
+                                                                    return "$" + tooltipItem.raw.toFixed(2) + " quadrillion"; // Tooltip for Revenue
                                                                 }
                                                             }
                                                         }
@@ -299,24 +311,23 @@
                                                     x: {
                                                         ticks: {
                                                             autoSkip: false, // Show all labels
-                                                            maxRotation: 0, // No rotation
-                                                            minRotation: 0, // No tilting
-                                                            align: "center" // Ensure alignment
+                                                            maxRotation: 0,
+                                                            minRotation: 0,
+                                                            align: "center"
                                                         }
                                                     },
                                                     y: {
                                                         beginAtZero: true,
                                                         ticks: {
                                                             callback: function (value) {
-                                                                return value >= 1000000
-                                                                    ? value / 1000000 + "M"
-                                                                    : value;
+                                                                return value >= 1000000 ? value / 1000000 + "M" : value; // Scale adjustment for large values
                                                             }
                                                         }
                                                     }
                                                 }
                                             }
                                         });
+
                                     } else {
                                         console.error("Canvas element with id 'missionChart' not found.");
                                     }
@@ -326,8 +337,6 @@
                             })
                             .catch(error => console.error("Fetch error:", error));
                     </script>
-                   
-
                     
                     {% endif %}
 
