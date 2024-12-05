@@ -280,6 +280,11 @@ def analyze():
                     "value_range": total_value_range,
                     "unit": "billion"  # Display in billions
                 }
+            else:
+                total_value_display = {
+                    "value_range": total_value_range_quadrillion,
+                    "unit": "quadrillion"  # Display in billions
+                }
 
             mission_cost={
                         "design_cost": design_cost,

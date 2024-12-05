@@ -239,7 +239,7 @@
                                 if (data.status === "success") {
                                     let missionCost = data.data.mission_cost;
                                     const benefits = data.data.benefits;
-                                    console.log(benefits.total_value_range)
+                                    console.log(benefits.total_value_display)
                     
                                     if (Array.isArray(missionCost) && missionCost.length > 0) {
                                         missionCost = missionCost[0]; // Extract first element if array
@@ -247,12 +247,11 @@
 
                                     const categories = [
                                         'Total Mission Cost in Million USD',
-                                        'Total Estimated Revenue in Quadrillion USD'
+                                        'Total Estimated Revenue in '+benefits.total_value_display.unit+' USD'
                                     ];
-
                                     const missionValues = [
                                         missionCost.total_cost,
-                                        benefits.total_value_range[1]
+                                        benefits.total_value_display.value_range[1]
                                     ];
 
                                     // Ensure canvas exists
@@ -262,7 +261,7 @@
 
                                         // Prepare data for the chart
                                         const categories = ['Total Mission Cost', 'Total Estimated Revenue'];
-                                        const missionValues = [missionCost.total_cost, benefits.total_value_range[1]];
+                                        const missionValues = [missionCost.total_cost, benefits.total_value_display['value_range'][1]];
 
                                         // Generate distinct, toned-down colors for each bar
                                         const costColor = "hsl(0, 50%, 70%)"; // Color for Mission Cost
@@ -277,21 +276,21 @@
                                                 datasets: [
                                                     {
                                                         label: "Mission Cost in Million USD",
-                                                        data: [missionValues[0], 0], // Mission Cost for the first category
-                                                        backgroundColor: costColor,
-                                                        borderColor: costBorderColor,
+                                                        data: [missionValues[0]], // Mission Cost for the first category
+                                                        backgroundColor: "rgba(255, 99, 132, 0.5)",
+                                                        borderColor: "rgba(255, 99, 132, 1)",
                                                         borderWidth: 1,
                                                         barPercentage: 1.3, // Adjust bar width
                                                         categoryPercentage: 0.3, // Adjust gap between bars
                                                     },
                                                     {
-                                                        label: "Revenue in Quadrillion USD",
-                                                        data: [0, missionValues[1]], // Revenue for the second category
-                                                        backgroundColor: revenueColor,
-                                                        borderColor: revenueBorderColor,
+                                                        label: "Revenue in "+benefits.total_value_display.unit+" USD",
+                                                        data: [missionValues[1]], // Revenue for the second category
+                                                        backgroundColor: "rgba(75, 192, 192, 0.5)",
+                                                        borderColor: "rgba(75, 192, 192, 1)",
                                                         borderWidth: 1,
-                                                        barPercentage: 1.3, // Adjust bar width
-                                                        categoryPercentage: -0.3, // Adjust gap between bars
+                                                        barPercentage: 0.2, // Adjust bar width
+                                                        categoryPercentage: 3.0, // Adjust gap between bars
                                                     }
                                                 ]
                                             },
@@ -311,7 +310,7 @@
                                                                 if (tooltipItem.datasetIndex === 0) {
                                                                     return "$" + tooltipItem.raw.toFixed(2) + " million"; // Tooltip for Mission Cost
                                                                 } else {
-                                                                    return "$" + tooltipItem.raw.toFixed(2) + " quadrillion"; // Tooltip for Revenue
+                                                                    return "$" + tooltipItem.raw.toFixed(2) + " "+benefits.total_value_display.unit; // Tooltip for Revenue
                                                                 }
                                                             }
                                                         }
