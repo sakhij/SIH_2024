@@ -118,6 +118,9 @@ def get_composition():
             print(f"Composition for SPK ID {spk_id}:")
             print(composition)
             return jsonify({"status": "success", "data": composition})
+        else:
+            composition=compo["20000433"]
+            return jsonify({"status": "success", "data": composition})
 
 @app.route("/analyze", methods=["POST"])
 def analyze():

@@ -78,7 +78,7 @@ li {
 
 /* Form */
 .card {
-  background-color: #1e1e1e;
+  background-color: rgb(0, 0, 0,0.9);
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
@@ -194,6 +194,7 @@ button:hover {
 }
 
 .card.scrollable {
+  background-color: rgba(52, 53, 53, 0.9);
   border: 1px solid rgba(168, 85, 247, 0.5);
 }
 

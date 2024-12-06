@@ -243,7 +243,7 @@
                         </p>
                     </div>
 
-                    <div class="card container graph">
+                    <div class="card-container-graph">
                         <div class="chart-wrapper">
                             <canvas id="missionChart"></canvas> <!-- Canvas for Mission Cost -->
                             <!-- Canvas for Revenue -->
@@ -285,6 +285,7 @@
                                         const categories = ['Total Mission Cost', 'Total Estimated Revenue'];
                                         const missionValues = [missionCost.total_cost, benefits.total_value_display['value_range'][1]];
 
+                                        
                                         // Generate distinct, toned-down colors for each bar
                                         const costColor = "hsl(0, 50%, 70%)"; // Color for Mission Cost
                                         const costBorderColor = "hsl(0, 70%, 50%)";
