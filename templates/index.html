@@ -36,7 +36,7 @@
 
                 <div class="form-container card">
                     <h2>Asteroid Parameters</h2>
-                    <form method="POST" action="/analyze">
+                    <form id="dataForm" method="POST" action="/analyze">
                         <label for="absolute_magnitude">Absolute Magnitude:</label>
                         <input type="text" id="absolute_magnitude" name="absolute_magnitude" required><br>
 
@@ -51,6 +51,28 @@
 
                         <button type="submit">Analyze</button>
                     </form>
+                    <script>
+                        // Add event listener to the form
+                        document.getElementById("dataForm").addEventListener("submit", function(event) {
+                            // Get input values
+                            const absoluteMagnitude = document.getElementById("absolute_magnitude").value;
+                            const albedo = document.getElementById("albedo").value;
+                            const eccentricity = document.getElementById("eccentricity").value;
+                            const aphelionDistance = document.getElementById("aphelion_distance").value;
+                    
+                            // Validation function
+                            function isNumeric(value) {
+                                return !isNaN(value) && isFinite(value); // Checks if the value is a valid number
+                            }
+                    
+                            // Validate inputs
+                            if (!isNumeric(absoluteMagnitude) || !isNumeric(albedo) || !isNumeric(eccentricity) || !isNumeric(aphelionDistance)) {
+                                alert("Invalid input: All fields must be numeric (int, float, double, or long).");
+                                event.preventDefault(); // Prevent form submission
+                            }
+                        });
+                    </script>
+                    
                 </div>
             </div>
 
@@ -363,6 +385,29 @@
 
         </div>
     </div>
+    <section class="visualization-section">
+        <div class="visualization-container">
+            <div id="loading-overlay" class="loading-overlay">
+                <div class="spinner"></div>
+                <span>Loading NASA visualization...</span>
+            </div>
+            <iframe 
+                id="nasa-viz"
+                src="/nasa/ov/index.html#load=&lookat=SSB&interval=6&eclipticgrid=false&"
+                title="NASA Solar System Visualization"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </section>
+    <script>
+        document.getElementById('nasa-viz').onload = function() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        };
+        
+        setTimeout(() => {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }, 10000);
+        </script>
 </body>
 
 </html>

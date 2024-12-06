@@ -356,5 +356,26 @@ def get_mission_data():
         }
     })
 
+@app.route('/nasa/<path:path>')
+def proxy(path):
+    # Construct the NASA URL
+    nasa_url = f'https://ssd.jpl.nasa.gov/{path}'
+    
+    # Forward the request to NASA
+    resp = requests.get(nasa_url, 
+                        headers={k: v for k, v in request.headers if k.lower() != 'host'},
+                        stream=True)
+    
+    # Create response object
+    excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection',
+                        'x-frame-options']  # Remove x-frame-options to allow embedding
+    headers = [(name, value) for (name, value) in resp.raw.headers.items()
+               if name.lower() not in excluded_headers]
+    
+    # Add CORS headers
+    headers.append(('Access-Control-Allow-Origin', '*'))
+    
+    return Response(resp.content, resp.status_code, headers)
+
 if __name__ == "__main__":
     app.run(debug=True)
