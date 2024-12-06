@@ -275,7 +275,7 @@ def analyze():
             total_value_range_quadrillion = (total_value_range[0] / 1_000_000, total_value_range[1] / 1_000_000)
             print(f"Total estimated value in quad: ${total_value_range_quadrillion[0]} - ${total_value_range_quadrillion[1]} quadrillion")
 
-            if total_value_range[0] < 1_000_000:
+            if total_value_range[0] < 100_000_000:
                 total_value_display = {
                     "value_range": total_value_range,
                     "unit": "billion"  # Display in billions
