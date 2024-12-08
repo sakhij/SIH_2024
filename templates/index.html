@@ -83,6 +83,7 @@
                     <p>
                         <strong>Name:</strong> {{ asteroid_details.Name }}<br>
                         <strong>Short Name:</strong> {{ asteroid_details.ShortName }}<br>
+                        <strong>Spectral Class:</strong> {{ asteroid_details.SpectralClass }}<br>
                         <strong>Orbit Class:</strong> {{ asteroid_details.OrbitClass }}<br>
                         <strong>Effective Diameter:</strong> {{ asteroid_details.dia }}<br>
                         <strong>Orbit ID:</strong> {{ asteroid_details.OrbitID }}<br>
@@ -243,7 +244,7 @@
                         </p>
                     </div>
 
-                    <div class="card-container-graph">
+                    <div class="card container graph">
                         <div class="chart-wrapper">
                             <canvas id="missionChart"></canvas> <!-- Canvas for Mission Cost -->
                             <!-- Canvas for Revenue -->
@@ -285,7 +286,6 @@
                                         const categories = ['Total Mission Cost', 'Total Estimated Revenue'];
                                         const missionValues = [missionCost.total_cost, benefits.total_value_display['value_range'][1]];
 
-                                        
                                         // Generate distinct, toned-down colors for each bar
                                         const costColor = "hsl(0, 50%, 70%)"; // Color for Mission Cost
                                         const costBorderColor = "hsl(0, 70%, 50%)";

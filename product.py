@@ -7,6 +7,8 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 import requests
 import json
+import tensorflow as tf
+from tensorflow.keras.models import load_model
 
 app = Flask(__name__)
 
@@ -118,9 +120,6 @@ def get_composition():
             print(f"Composition for SPK ID {spk_id}:")
             print(composition)
             return jsonify({"status": "success", "data": composition})
-        else:
-            composition=compo["20000433"]
-            return jsonify({"status": "success", "data": composition})
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
@@ -128,6 +127,9 @@ def analyze():
     global asteroid_details
     global mission_cost
     global benefits
+
+    # Load the pre-trained CNN model
+    cnn_model = load_model('cnn_model_new_data.h5')  # Replace with your actual CNN model file path
 
     absolute_magnitude = request.form["absolute_magnitude"]
     albedo = request.form["albedo"]
@@ -140,8 +142,21 @@ def analyze():
     if not all(col in df.columns for col in columns_to_search + [spk_id_column]):
         raise ValueError("Dataset does not contain the required columns.")
 
+    # Prepare input data for the CNN model
+    user_input = [float(albedo), float(absolute_magnitude), float(eccentricity), float(aphelion_distance)]
+    cnn_input = np.array(user_input).reshape(1, -1)  # Reshape to match the expected input of the CNN model
+
+    # Predict the class using the CNN model
+    cnn_predicted_class_index = cnn_model.predict(cnn_input)  # Predict the class index using the CNN model
+    cnn_predicted_class_index = np.argmax(cnn_predicted_class_index, axis=1)[0]  # Extract the predicted class index
+
+    # Map the CNN predicted index to the actual class using label encoder
     label_encoder = LabelEncoder()
-    df['main_class'] = label_encoder.fit_transform(df['main_class'])
+    label_encoder.fit(df['main_class'])  # Fit encoder on existing classes
+    decoded_class = label_encoder.inverse_transform([int(cnn_predicted_class_index)])[0]
+
+    # Print the predicted class from CNN model
+    print(f"Predicted Class (CNN): {decoded_class}")
 
     values = df[columns_to_search].drop(columns=['main_class']).values
     tree = KDTree(values)
@@ -151,7 +166,6 @@ def analyze():
 
     distance, index = tree.query(user_input_numeric)
     closest_match = df.iloc[index]
-    decoded_class = label_encoder.inverse_transform([closest_match['main_class']])[0]
     spk_id = closest_match[spk_id_column]
 
     # API integration
@@ -181,6 +195,7 @@ def analyze():
             asteroid_details = {
                 "Name": name or 'N/A',
                 "ShortName": short_name or 'N/A',
+                "SpectralClass": decoded_class,
                 "SPKID": spk_id,
                 "OrbitClass": orbit_class or 'N/A',
                 "pha": pha or 'N/A',
@@ -359,26 +374,26 @@ def get_mission_data():
         }
     })
 
-@app.route('/nasa/<path:path>')
-def proxy(path):
-    # Construct the NASA URL
-    nasa_url = f'https://ssd.jpl.nasa.gov/{path}'
+# @app.route('/nasa/<path:path>')
+# def proxy(path):
+#     # Construct the NASA URL
+#     nasa_url = f'https://ssd.jpl.nasa.gov/{path}'
     
-    # Forward the request to NASA
-    resp = requests.get(nasa_url, 
-                        headers={k: v for k, v in request.headers if k.lower() != 'host'},
-                        stream=True)
+#     # Forward the request to NASA
+#     resp = requests.get(nasa_url, 
+#                         headers={k: v for k, v in request.headers if k.lower() != 'host'},
+#                         stream=True)
     
-    # Create response object
-    excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection',
-                        'x-frame-options']  # Remove x-frame-options to allow embedding
-    headers = [(name, value) for (name, value) in resp.raw.headers.items()
-               if name.lower() not in excluded_headers]
+#     # Create response object
+#     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection',
+#                         'x-frame-options']  # Remove x-frame-options to allow embedding
+#     headers = [(name, value) for (name, value) in resp.raw.headers.items()
+#                if name.lower() not in excluded_headers]
     
-    # Add CORS headers
-    headers.append(('Access-Control-Allow-Origin', '*'))
+#     # Add CORS headers
+#     headers.append(('Access-Control-Allow-Origin', '*'))
     
-    return Response(resp.content, resp.status_code, headers)
+#     return Response(resp.content, resp.status_code, headers)
 
 if __name__ == "__main__":
     app.run(debug=True)
