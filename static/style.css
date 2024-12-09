@@ -123,7 +123,7 @@ input[type="text"]:focus {
 }
 
 .cardR {
-  background-color: #8f8080;
+  background-color: rgba(210, 205, 211, 0.7);
 }
 
 .graph {
