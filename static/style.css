@@ -78,7 +78,7 @@ li {
 
 /* Form */
 .card {
-  background-color: rgba(52, 53, 53, 0.9);
+  background-color: #1e1e1e;
   padding: 1.5rem;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
@@ -90,7 +90,6 @@ li {
 }
 
 .form-container {
-  background-color: rgba(52, 53, 53, 0.9);
   margin-top: 1.5rem;
 }
 
@@ -104,7 +103,7 @@ label {
 input[type="text"] {
   width: 100%;
   padding: 0.75rem;
-  background-color: rgba(52, 53, 53, 0.9);
+  background-color: #2c2f3f;
   color: #d1d1d6;
   border: 1px solid #444854;
   border-radius: 8px;
@@ -123,7 +122,7 @@ input[type="text"]:focus {
 }
 
 .cardR {
-  background-color: rgba(210, 205, 211, 0.7);
+  background-color: #8f8080;
 }
 
 .graph {
@@ -195,7 +194,6 @@ button:hover {
 }
 
 .card.scrollable {
-  background-color: rgba(52, 53, 53, 0.9);
   border: 1px solid rgba(168, 85, 247, 0.5);
 }
 
@@ -217,56 +215,4 @@ button:hover {
   .grid {
     grid-template-columns: 1fr;
   }
-}
-
-
-.visualization-section {
-
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 1rem;
-  margin-bottom: 1rem;
-  height: calc(100vh - 200px);
-  width: 100%; /* Ensure it takes the full width of the container */
-}
-
-.visualization-container {
-  width: 100%; /* Ensure it takes the full width */
-  height: 100%;
-  position: relative;
-}
-
-#nasa-viz {
-  width: 100%; /* Ensure iframe stretches to fill its container */
-  height: 100%;
-  border: none;
-  border-radius: 4px;
-}
-
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 1.2rem;
-  z-index: 1000;
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #3498db;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-right: 10px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
 }

@@ -386,29 +386,6 @@
 
         </div>
     </div>
-    <section class="visualization-section">
-        <div class="visualization-container">
-            <div id="loading-overlay" class="loading-overlay">
-                <div class="spinner"></div>
-                <span>Loading NASA visualization...</span>
-            </div>
-            <iframe 
-                id="nasa-viz"
-                src="/nasa/ov/index.html#load=&lookat=SSB&interval=6&eclipticgrid=false&"
-                title="NASA Solar System Visualization"
-                allowfullscreen>
-            </iframe>
-        </div>
-    </section>
-    <script>
-        document.getElementById('nasa-viz').onload = function() {
-            document.getElementById('loading-overlay').style.display = 'none';
-        };
-        
-        setTimeout(() => {
-            document.getElementById('loading-overlay').style.display = 'none';
-        }, 10000);
-        </script>
 </body>
 
 </html>
