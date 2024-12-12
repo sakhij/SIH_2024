@@ -140,13 +140,17 @@ button:hover {
 /* Results */
 .grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
   margin-top: 2rem;
 }
 
-.asteroid_details {
-    width: 2428px
+img {
+  display: block !important; /* Force display */
+}
+
+.image-container {
+  display: block;
 }
 
 .wrap-container {

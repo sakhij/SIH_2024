@@ -7,6 +7,8 @@
     <title>AsteroMiner AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='composition.css') }}">
+    <link rel="preload" href="/static/images/juno.jpg" as="image">
+
 </head>
 
 <body class="bg-black text-white">
@@ -18,7 +20,8 @@
                         <h1>AsteroMiner AI 🌌🤖</h1>
                         <h2>Your Gateway to Asteroid Mining!</h2>
                     </div>
-                    <p class="textR">Unlock the cosmos with AsteroMiner AI, merging advanced tech, AI, and real-time data for
+                    <p class="textR">Unlock the cosmos with AsteroMiner AI, merging advanced tech, AI, and real-time
+                        data for
                         smarter, more efficient asteroid mining.</p>
 
                     <div class="features">
@@ -38,33 +41,33 @@
                     <h2>Asteroid Parameters</h2>
                     <form id="dataForm" method="POST" action="/analyze">
                         <label for="absolute_magnitude">Absolute Magnitude:</label>
-                        <input type="text" id="absolute_magnitude" name="absolute_magnitude" required><br>
+                        <input type="text" id="absolute_magnitude" name="absolute_magnitude" placeholder="5 - 13" required><br>
 
                         <label for="albedo">Albedo:</label>
-                        <input type="text" id="albedo" name="albedo" required><br>
+                        <input type="text" id="albedo" name="albedo" placeholder="0 - 0.5" required><br>
 
                         <label for="eccentricity">Eccentricity:</label>
-                        <input type="text" id="eccentricity" name="eccentricity" required><br>
+                        <input type="text" id="eccentricity" name="eccentricity" placeholder="0.05 - 0.5" required><br>
 
                         <label for="aphelion_distance">Aphelion Distance:</label>
-                        <input type="text" id="aphelion_distance" name="aphelion_distance" required><br>
+                        <input type="text" id="aphelion_distance" name="aphelion_distance" placeholder="1.5 - 4" required><br>
 
                         <button type="submit">Analyze</button>
                     </form>
                     <script>
                         // Add event listener to the form
-                        document.getElementById("dataForm").addEventListener("submit", function(event) {
+                        document.getElementById("dataForm").addEventListener("submit", function (event) {
                             // Get input values
                             const absoluteMagnitude = document.getElementById("absolute_magnitude").value;
                             const albedo = document.getElementById("albedo").value;
                             const eccentricity = document.getElementById("eccentricity").value;
                             const aphelionDistance = document.getElementById("aphelion_distance").value;
-                    
+
                             // Validation function
                             function isNumeric(value) {
                                 return !isNaN(value) && isFinite(value); // Checks if the value is a valid number
                             }
-                    
+
                             // Validate inputs
                             if (!isNumeric(absoluteMagnitude) || !isNumeric(albedo) || !isNumeric(eccentricity) || !isNumeric(aphelionDistance)) {
                                 alert("Invalid input: All fields must be numeric (int, float, double, or long).");
@@ -72,7 +75,7 @@
                             }
                         });
                     </script>
-                    
+
                 </div>
             </div>
 
@@ -102,6 +105,73 @@
                         <strong>Argument of Perihelion:</strong> {{ asteroid_details.args}}<br>
                         <strong>Longitude of the Ascending Node:</strong> {{ asteroid_details.longi}}<br>
                     </p>
+                </div>
+                <div class="wrap-container">
+                    <div class="card">
+                        <h3>Asteroid Visualisation</h3>
+                        <div id="image-container">
+                            
+                        </div>
+                        <script>
+                            fetch("/get-visual", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.status === "success") {
+                                        const spec_class = data.data.predicted_class_label;
+                                        const name=data.data.name;
+                                        console.log(spec_class)
+                                        const imageContainer = document.getElementById('image-container');
+                                        const imgTag = document.createElement('img');
+                                        if (spec_class === 'X-type'&& name != '16 Psyche (A852 FA)') {
+                                            imgTag.src = '/static/images/x-type.jpg';
+                                            imgTag.alt = 'asteroid';
+                                            imgTag.style.width = "430px";
+                                            imgTag.style.height = "auto";
+                                            imgTag.loading = "lazy";
+                                            console.log(imgTag.src);
+                                        }
+                                        else if (spec_class === 'S-type'&& name != '433 Eros (A898 PA)') {
+                                            imgTag.src = 'static/images/Itokawa-s-type.jpg';
+                                            imgTag.alt = 'asteroid';
+                                            imgTag.style.width = "430px";
+                                            imgTag.style.height = "auto";
+                                            imgTag.loading = "lazy";
+                                            console.log(imgTag.src);
+                                        }
+                                        else if (spec_class === 'C-type') {
+                                            imgTag.src = 'static/images/bennu-twelve-image-mosaic.jpg';
+                                            imgTag.alt = 'asteroid';
+                                            imgTag.style.width = "430px";
+                                            imgTag.style.height = "auto";
+                                            imgTag.loading = "lazy";
+                                            console.log(imgTag.src);
+                                        }
+                                        else if ( name === '16 Psyche (A852 FA)') {
+                                            imgTag.src = 'static/images/16.jpg';
+                                            imgTag.alt = 'asteroid';
+                                            imgTag.style.width = "430px";
+                                            imgTag.style.height = "auto";
+                                            imgTag.loading = "lazy";
+                                            console.log(imgTag.src);
+                                        }
+                                        else if ( name === '433 Eros (A898 PA)') {
+                                            imgTag.src = 'static/images/eros.jpeg';
+                                            imgTag.alt = 'asteroid';
+                                            imgTag.style.width = "430px";
+                                            imgTag.style.height = "auto";
+                                            imgTag.loading = "lazy";
+                                            console.log(imgTag.src);
+                                        }
+                                        console.log(imgTag.alt)
+                                        imageContainer.appendChild(imgTag)
+                                    }
+                                })
+                                .catch(err => console.error('Fetch error:', err));
+                        </script>
+                    </div>
                 </div>
             </div>
 
@@ -239,8 +309,9 @@
                             benefits['organic_compounds']['value_range'][0] }} - ${{
                             benefits['organic_compounds']['value_range'][1] }} billion)</p>
                         <p>
-                        <h4>Total Estimated Value: ${{ benefits['total_value_display']['value_range'][0] }} - ${{ 
-                            benefits['total_value_display']['value_range'][1] }} {{ benefits['total_value_display']['unit'] }}</h4>
+                        <h4>Total Estimated Value: ${{ benefits['total_value_display']['value_range'][0] }} - ${{
+                            benefits['total_value_display']['value_range'][1] }} {{
+                            benefits['total_value_display']['unit'] }}</h4>
                         </p>
                     </div>
 
@@ -263,14 +334,14 @@
                                     let missionCost = data.data.mission_cost;
                                     const benefits = data.data.benefits;
                                     console.log(benefits.total_value_display)
-                    
+
                                     if (Array.isArray(missionCost) && missionCost.length > 0) {
                                         missionCost = missionCost[0]; // Extract first element if array
                                     }
 
                                     const categories = [
                                         'Total Mission Cost in Million USD',
-                                        'Total Estimated Revenue in '+benefits.total_value_display.unit+' USD'
+                                        'Total Estimated Revenue in ' + benefits.total_value_display.unit + ' USD'
                                     ];
                                     const missionValues = [
                                         missionCost.total_cost,
@@ -307,7 +378,7 @@
                                                         categoryPercentage: 0.3, // Adjust gap between bars
                                                     },
                                                     {
-                                                        label: "Revenue in "+benefits.total_value_display.unit+" USD",
+                                                        label: "Revenue in " + benefits.total_value_display.unit + " USD",
                                                         data: [missionValues[1]], // Revenue for the second category
                                                         backgroundColor: "rgba(75, 192, 192, 0.5)",
                                                         borderColor: "rgba(75, 192, 192, 1)",
@@ -333,7 +404,7 @@
                                                                 if (tooltipItem.datasetIndex === 0) {
                                                                     return "$" + tooltipItem.raw.toFixed(2) + " million"; // Tooltip for Mission Cost
                                                                 } else {
-                                                                    return "$" + tooltipItem.raw.toFixed(2) + " "+benefits.total_value_display.unit; // Tooltip for Revenue
+                                                                    return "$" + tooltipItem.raw.toFixed(2) + " " + benefits.total_value_display.unit; // Tooltip for Revenue
                                                                 }
                                                             }
                                                         }
@@ -377,16 +448,11 @@
 
 
 
-                    
+
                     {% endif %}
 
                 </div>
 
-            </div>
-            <div class="wrap-container">
-                <div class="card scrollable inst-cont">
-                    <h3>Asteroid Visualisation</h3>
-                </div>
             </div>
 
         </div>

@@ -13,8 +13,8 @@ import xgboost as xgb
 app = Flask(__name__)
 
 # Initialize Cohere with your API key
-cohere_api_key = "Zppye9OdNDcXgkNIhaAVlvbFNzBnDmX6A095XOJK"
-#cohere_api_key = "bWAmXD1sME2U2Tf4Ulvcp4MpQVpWpDjFENy9e3VN"
+#cohere_api_key = "Zppye9OdNDcXgkNIhaAVlvbFNzBnDmX6A095XOJK"
+cohere_api_key = "bWAmXD1sME2U2Tf4Ulvcp4MpQVpWpDjFENy9e3VN"
 co = cohere.Client(cohere_api_key)
 
 with open('asteroid_compositions_from_ecocell.json') as f:
@@ -127,6 +127,7 @@ def analyze():
     global asteroid_details
     global mission_cost
     global benefits
+    global spk_id
 
     model_path = 'xgboost_model_updated.pkl'  # Replace with the correct model filename
     with open(model_path, 'rb') as file:
@@ -233,7 +234,7 @@ def analyze():
                 "SPKID": spk_id,
                 "OrbitClass": orbit_class or 'N/A',
                 "SpectralClass": predicted_class_label or 'N/A',
-                "pha": pha or 'Not Hazardous',
+                "pha": pha or 'False',
                 "OrbitID": orbit_id or 'N/A',
                 "H": abs_magnitude or 'N/A',
                 "G": magnitude_slope or 'N/A',
@@ -445,6 +446,15 @@ def get_mission_data():
             "benefits": benefits
         }
     })
+
+@app.route("/get-visual", methods=["POST"])
+def get_visual():
+    global spk_id
+    global predicted_class_label
+    global asteroid_details
+    return jsonify({ "status": "success",
+        "data": {"predicted_class_label": predicted_class_label,
+                 "name":asteroid_details["Name"]}})
 
 if __name__ == "__main__":
     app.run(debug=True)
