@@ -111,7 +111,7 @@ def get_composition():
             print(composition)
             return jsonify({"status": "success", "data": composition})
         elif predicted_class_label=='C-type':
-            composition = compo["20001580"]
+            composition = compo["20000002"]
             print(f"Composition for SPK ID {spk_id}:")
             print(composition)
             return jsonify({"status": "success", "data": composition})
