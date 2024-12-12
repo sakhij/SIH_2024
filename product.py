@@ -13,8 +13,8 @@ import xgboost as xgb
 app = Flask(__name__)
 
 # Initialize Cohere with your API key
-#cohere_api_key = "Zppye9OdNDcXgkNIhaAVlvbFNzBnDmX6A095XOJK"
-cohere_api_key = "bWAmXD1sME2U2Tf4Ulvcp4MpQVpWpDjFENy9e3VN"
+cohere_api_key = "Zppye9OdNDcXgkNIhaAVlvbFNzBnDmX6A095XOJK"
+#cohere_api_key = "bWAmXD1sME2U2Tf4Ulvcp4MpQVpWpDjFENy9e3VN"
 co = cohere.Client(cohere_api_key)
 
 with open('asteroid_compositions_from_ecocell.json') as f:
@@ -292,7 +292,7 @@ def analyze():
 
             print(f"Mission Design and Planning Cost: ${design_cost:.2f} million")
             print(f"Spacecraft Development and Launch Cost: ${dev_cost + launch_cost:.2f} million")
-            print(f"Asteroid Capture and Processing Cost: ${capture_cost + process_cost:.2f} million")
+            print(f"Asteroid Capture and Processing Cost: ${capture_cost:.2f} million")
             print(f"Total Mission Cost: ${total_cost:.2f} million")
 
             # Estimated Benefits Calculation

@@ -7,7 +7,7 @@
     <title>AsteroMiner AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='composition.css') }}">
-    <link rel="preload" href="/static/images/juno.jpg" as="image">
+
 
 </head>
 
@@ -41,7 +41,8 @@
                     <h2>Asteroid Parameters</h2>
                     <form id="dataForm" method="POST" action="/analyze">
                         <label for="absolute_magnitude">Absolute Magnitude:</label>
-                        <input type="text" id="absolute_magnitude" name="absolute_magnitude" placeholder="5 - 13" required><br>
+                        <input type="text" id="absolute_magnitude" name="absolute_magnitude" placeholder="5 - 13"
+                            required><br>
 
                         <label for="albedo">Albedo:</label>
                         <input type="text" id="albedo" name="albedo" placeholder="0 - 0.5" required><br>
@@ -50,7 +51,8 @@
                         <input type="text" id="eccentricity" name="eccentricity" placeholder="0.05 - 0.5" required><br>
 
                         <label for="aphelion_distance">Aphelion Distance:</label>
-                        <input type="text" id="aphelion_distance" name="aphelion_distance" placeholder="1.5 - 4" required><br>
+                        <input type="text" id="aphelion_distance" name="aphelion_distance" placeholder="1.5 - 4"
+                            required><br>
 
                         <button type="submit">Analyze</button>
                     </form>
@@ -58,23 +60,47 @@
                         // Add event listener to the form
                         document.getElementById("dataForm").addEventListener("submit", function (event) {
                             // Get input values
-                            const absoluteMagnitude = document.getElementById("absolute_magnitude").value;
-                            const albedo = document.getElementById("albedo").value;
-                            const eccentricity = document.getElementById("eccentricity").value;
-                            const aphelionDistance = document.getElementById("aphelion_distance").value;
+                            const absoluteMagnitude = parseFloat(document.getElementById("absolute_magnitude").value);
+                            const albedo = parseFloat(document.getElementById("albedo").value);
+                            const eccentricity = parseFloat(document.getElementById("eccentricity").value);
+                            const aphelionDistance = parseFloat(document.getElementById("aphelion_distance").value);
 
                             // Validation function
                             function isNumeric(value) {
                                 return !isNaN(value) && isFinite(value); // Checks if the value is a valid number
                             }
 
-                            // Validate inputs
-                            if (!isNumeric(absoluteMagnitude) || !isNumeric(albedo) || !isNumeric(eccentricity) || !isNumeric(aphelionDistance)) {
-                                alert("Invalid input: All fields must be numeric (int, float, double, or long).");
+                            // Initialize error message
+                            let errorMessage = "";
+
+                            // Validate absolute magnitude
+                            if (!isNumeric(absoluteMagnitude) || absoluteMagnitude < 5 || absoluteMagnitude > 13) {
+                                errorMessage += "Absolute Magnitude must be a numeric value between 5 and 13.\n";
+                            }
+
+                            // Validate albedo
+                            if (!isNumeric(albedo) || albedo < 0 || albedo > 0.5) {
+                                errorMessage += "Albedo must be a numeric value between 0 and 0.5.\n";
+                            }
+
+                            // Validate eccentricity
+                            if (!isNumeric(eccentricity) || eccentricity < 0.05 || eccentricity > 0.5) {
+                                errorMessage += "Eccentricity must be a numeric value between 0.05 and 0.5.\n";
+                            }
+
+                            // Validate aphelion distance
+                            if (!isNumeric(aphelionDistance) || aphelionDistance < 1.5 || aphelionDistance > 4) {
+                                errorMessage += "Aphelion Distance must be a numeric value between 1.5 and 4.\n";
+                            }
+
+                            // If any validation fails, alert the error message and prevent form submission
+                            if (errorMessage) {
+                                alert(errorMessage);
                                 event.preventDefault(); // Prevent form submission
                             }
                         });
                     </script>
+
 
                 </div>
             </div>
@@ -110,67 +136,45 @@
                     <div class="card">
                         <h3>Asteroid Visualisation</h3>
                         <div id="image-container">
-                            
+
                         </div>
                         <script>
-                            fetch("/get-visual", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                            })
-                                .then(response => response.json())
-                                .then(data => {
-                                    if (data.status === "success") {
-                                        const spec_class = data.data.predicted_class_label;
-                                        const name=data.data.name;
-                                        console.log(spec_class)
-                                        const imageContainer = document.getElementById('image-container');
-                                        const imgTag = document.createElement('img');
-                                        if (spec_class === 'X-type'&& name != '16 Psyche (A852 FA)') {
-                                            imgTag.src = '/static/images/x-type.jpg';
-                                            imgTag.alt = 'asteroid';
-                                            imgTag.style.width = "430px";
-                                            imgTag.style.height = "auto";
-                                            imgTag.loading = "lazy";
-                                            console.log(imgTag.src);
-                                        }
-                                        else if (spec_class === 'S-type'&& name != '433 Eros (A898 PA)') {
-                                            imgTag.src = 'static/images/Itokawa-s-type.jpg';
-                                            imgTag.alt = 'asteroid';
-                                            imgTag.style.width = "430px";
-                                            imgTag.style.height = "auto";
-                                            imgTag.loading = "lazy";
-                                            console.log(imgTag.src);
-                                        }
-                                        else if (spec_class === 'C-type') {
-                                            imgTag.src = 'static/images/bennu-twelve-image-mosaic.jpg';
-                                            imgTag.alt = 'asteroid';
-                                            imgTag.style.width = "430px";
-                                            imgTag.style.height = "auto";
-                                            imgTag.loading = "lazy";
-                                            console.log(imgTag.src);
-                                        }
-                                        else if ( name === '16 Psyche (A852 FA)') {
-                                            imgTag.src = 'static/images/16.jpg';
-                                            imgTag.alt = 'asteroid';
-                                            imgTag.style.width = "430px";
-                                            imgTag.style.height = "auto";
-                                            imgTag.loading = "lazy";
-                                            console.log(imgTag.src);
-                                        }
-                                        else if ( name === '433 Eros (A898 PA)') {
-                                            imgTag.src = 'static/images/eros.jpeg';
-                                            imgTag.alt = 'asteroid';
-                                            imgTag.style.width = "430px";
-                                            imgTag.style.height = "auto";
-                                            imgTag.loading = "lazy";
-                                            console.log(imgTag.src);
-                                        }
-                                        console.log(imgTag.alt)
-                                        imageContainer.appendChild(imgTag)
-                                    }
-                                })
-                                .catch(err => console.error('Fetch error:', err));
+                            // Image arrays
+                            let ximages = ['static/images/x-type-1.jpg', 'static/images/x-type-2.jpg', 'static/images/x-type.jpg'];
+                            let cimages = ['static/images/bennu-c.jpg', 'static/images/Ceres_globe-c.jpeg', 'static/images/c-type.jpg', 'static/images/ryugu-c.jpg'];
+                            let simages = ['static/images/2012-DA14-s.jpg', 'static/images/eros-s.jpeg', 'static/images/Itokawa-s.jpg', 'static/images/juno-s.jpg'];
+
+                            // Combined array for demonstration (you can target any array dynamically)
+                            let images = [...ximages, ...cimages, ...simages]; // Merge all arrays or choose one array
+
+                            // Function to get the next image index cyclically
+                            function getNextIndex(currentIndex, arrayLength) {
+                                return (currentIndex + 1) % arrayLength; // Cycles back to 0 after reaching the last index
+                            }
+
+                            // Load and update the index from localStorage
+                            let currentIndex = parseInt(localStorage.getItem("imageIndex")) || 0; // Default to 0 if no index is stored
+                            const nextIndex = getNextIndex(currentIndex, images.length);
+
+                            // Update localStorage with the next index
+                            localStorage.setItem("imageIndex", nextIndex);
+
+                            // Get the image container
+                            const imageContainer = document.getElementById("image-container");
+
+                            // Clear the container and display the current image
+                            imageContainer.innerHTML = ''; // Clear previous content
+                            const imgTag = document.createElement('img');
+                            imgTag.src = images[currentIndex];
+                            imgTag.alt = 'Asteroid Image';
+                            imgTag.style.width = "430px";
+                            imgTag.style.height = "320px";
+                            imgTag.loading = "lazy";
+                            imageContainer.appendChild(imgTag);
+
+                            console.log(`Displayed Image: ${images[currentIndex]}, Next Index: ${nextIndex}`);
                         </script>
+
                     </div>
                 </div>
             </div>
@@ -289,11 +293,12 @@
                         <p>Spacecraft Development and Launch Cost: ${{ mission_cost['dev_cost'] +
                             mission_cost['launch_cost'] }}
                             million</p>
-                        <p>Asteroid Capture and Processing Cost: ${{ mission_cost['capture_cost'] +
-                            mission_cost['process_cost']
-                            }} million</p>
+                        <p>Asteroid Capture Cost: ${{ mission_cost['capture_cost'] }} million</p>
+                        <h4>Mission Cost: ${{ mission_cost['total_cost'] }} million</h4><br>
+                        <h3>Post-Mission Cost Estimation</h3>
+                        <p>Cost to Convert the Sample to Pure Metal: ${{ mission_cost['process_cost'] }}</p>
                         <p>
-                        <h4>Total Mission Cost: ${{ mission_cost['total_cost'] }} million</h4>
+                        <h4>Total Mission Cost(All cost): ${{ mission_cost['total_cost'] }} million</h4>
                         </p>
 
                         <h3>Estimated Benefits</h3>
@@ -354,7 +359,7 @@
                                         const ctx = missionChartCanvas.getContext("2d");
 
                                         // Prepare data for the chart
-                                        const categories = ['Total Mission Cost', 'Total Estimated Revenue'];
+                                        const categories = ['Total Mission Cost(Post+During)', 'Total Estimated Revenue'];
                                         const missionValues = [missionCost.total_cost, benefits.total_value_display['value_range'][1]];
 
                                         // Generate distinct, toned-down colors for each bar
