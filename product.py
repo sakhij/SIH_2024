@@ -7,8 +7,8 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 import requests
 import json
-import tensorflow as tf
-from tensorflow.keras.models import load_model
+import pickle
+import xgboost as xgb
 
 app = Flask(__name__)
 
@@ -24,7 +24,7 @@ csv_file = "updated_dataset_main.csv"  # Replace with the path to your dataset
 # Load your dataset for KDTree search
 df = pd.read_csv(csv_file)
 
-global decoded_class
+global predicted_class_label
 global asteroid_details
 
 # Helper function to format responses for better readability
@@ -95,7 +95,7 @@ def index():
 
 @app.route('/get-composition', methods=['POST'])
 def get_composition():
-    global decoded_class
+    global predicted_class_label
     spk_id = request.json.get('spk_id')
     print(spk_id in compo)
     
@@ -105,17 +105,17 @@ def get_composition():
         print(composition)
         return jsonify({"status": "success", "data": composition})
     else:
-        if decoded_class=='S-type':
+        if predicted_class_label=='S-type':
             composition = compo["20000433"]
             print(f"Composition for SPK ID {spk_id}:")
             print(composition)
             return jsonify({"status": "success", "data": composition})
-        elif decoded_class=='C-type':
-            composition = compo["20001580"]
+        elif predicted_class_label=='C-type':
+            composition = compo["20000002"]
             print(f"Composition for SPK ID {spk_id}:")
             print(composition)
             return jsonify({"status": "success", "data": composition})
-        elif decoded_class=='X-type':
+        elif predicted_class_label=='X-type':
             composition = compo["20005751"]
             print(f"Composition for SPK ID {spk_id}:")
             print(composition)
@@ -123,13 +123,22 @@ def get_composition():
 
 @app.route("/analyze", methods=["POST"])
 def analyze():
-    global decoded_class
+    global predicted_class_label
     global asteroid_details
     global mission_cost
     global benefits
 
-    # Load the pre-trained CNN model
-    cnn_model = load_model('cnn_model_new_data.h5')  # Replace with your actual CNN model file path
+    model_path = 'xgboost_model_updated.pkl'  # Replace with the correct model filename
+    with open(model_path, 'rb') as file:
+        model = pickle.load(file)
+
+    # Define label mapping
+    label_mapping = {
+        0: "C-type",  # Replace with actual type names
+        1: "S-type",
+        2: "X-type",
+        # Add more mappings if needed
+    }
 
     absolute_magnitude = request.form["absolute_magnitude"]
     albedo = request.form["albedo"]
@@ -142,31 +151,57 @@ def analyze():
     if not all(col in df.columns for col in columns_to_search + [spk_id_column]):
         raise ValueError("Dataset does not contain the required columns.")
 
-    # Prepare input data for the CNN model
-    user_input = [float(albedo), float(absolute_magnitude), float(eccentricity), float(aphelion_distance)]
-    cnn_input = np.array(user_input).reshape(1, -1)  # Reshape to match the expected input of the CNN model
-
-    # Predict the class using the CNN model
-    cnn_predicted_class_index = cnn_model.predict(cnn_input)  # Predict the class index using the CNN model
-    cnn_predicted_class_index = np.argmax(cnn_predicted_class_index, axis=1)[0]  # Extract the predicted class index
-
-    # Map the CNN predicted index to the actual class using label encoder
     label_encoder = LabelEncoder()
-    label_encoder.fit(df['main_class'])  # Fit encoder on existing classes
-    decoded_class = label_encoder.inverse_transform([int(cnn_predicted_class_index)])[0]
-
-    # Print the predicted class from CNN model
-    print(f"Predicted Class (CNN): {decoded_class}")
+    df['main_class'] = label_encoder.fit_transform(df['main_class'])
 
     values = df[columns_to_search].drop(columns=['main_class']).values
     tree = KDTree(values)
 
-    user_input = [float(albedo), float(absolute_magnitude), float(eccentricity), float(aphelion_distance), 'X-type']
+    user_input = [float(albedo), float(absolute_magnitude), float(eccentricity), float(aphelion_distance)]
     user_input_numeric = user_input[:4]
 
     distance, index = tree.query(user_input_numeric)
     closest_match = df.iloc[index]
-    spk_id = closest_match[spk_id_column]
+    decoded_class = label_encoder.inverse_transform([closest_match['main_class']])[0]
+    spk_id = closest_match[spk_id_column]  
+
+    # User input for KDTree search
+    user_inputs = [float(albedo), float(absolute_magnitude), float(eccentricity), float(aphelion_distance)]
+
+    # Perform KDTree search
+    distance, index = tree.query([user_inputs])
+    closest_match = df.iloc[index[0]]
+
+    # Prepare user input for XGBoost model
+    model_feature_names = model.feature_names  # Ensure this matches the trained model
+
+    input_parameters = {
+    'H': absolute_magnitude,
+    'e': eccentricity,
+    'albedo': albedo,
+    'ad': aphelion_distance
+    }
+
+    # Ensure the input data is numeric
+    manual_input_df = pd.DataFrame([input_parameters])  # Single row for manual input
+    manual_input_df = manual_input_df.astype(float)  # Convert all columns to float
+
+    # Reorder columns to match the model
+    manual_input_df = manual_input_df[model.feature_names]  # Ensure column order matches the model
+
+    # Prepare input for prediction
+    dtest_manual = xgb.DMatrix(manual_input_df)
+
+    # Predict asteroid type using XGBoost model
+    manual_prediction = model.predict(dtest_manual)
+
+    # Decode the XGBoost prediction
+    predicted_class_index = int(manual_prediction[0])  # Convert prediction to integer index
+    predicted_class_label = label_mapping[predicted_class_index]  # Get the class label
+
+    print(decoded_class)
+    print(predicted_class_index)
+    print(predicted_class_label)
 
     # API integration
     api_url = f"https://ssd-api.jpl.nasa.gov/sbdb.api?spk={spk_id}&phys-par=1"
@@ -195,10 +230,10 @@ def analyze():
             asteroid_details = {
                 "Name": name or 'N/A',
                 "ShortName": short_name or 'N/A',
-                "SpectralClass": decoded_class,
                 "SPKID": spk_id,
                 "OrbitClass": orbit_class or 'N/A',
-                "pha": pha or 'N/A',
+                "SpectralClass": predicted_class_label or 'N/A',
+                "pha": pha or 'Not Hazardous',
                 "OrbitID": orbit_id or 'N/A',
                 "H": abs_magnitude or 'N/A',
                 "G": magnitude_slope or 'N/A',
@@ -239,11 +274,11 @@ def analyze():
             if bulk_density != "N/A":
                 bulk_density = float(bulk_density)
             else:
-                if decoded_class == "C-type":
+                if predicted_class_label == "C-type":
                     bulk_density = 1.3  # kg/m^3 (carbonaceous)
-                elif decoded_class == "S-type":
+                elif predicted_class_label == "S-type":
                     bulk_density = 2.7  # kg/m^3 (silicate-rich)
-                elif decoded_class == "X-type":
+                elif predicted_class_label == "X-type":
                     bulk_density = 7    # kg/m^3 (metallic)
                 else:
                     bulk_density = 2.7  # Default to S-type
@@ -268,41 +303,78 @@ def analyze():
             # Calculate mass of asteroid
             mass_of_asteroid = bulk_density * volume_mined  # Mass in kg
 
-            # Water Ice (5% of mass)
-            water_ice_mass = 0.05 * mass_of_asteroid  # in kg
-            water_ice_value_range = (water_ice_mass * 10**-9 * 10, water_ice_mass * 10**-9 * 30)  # in billion USD
-            print(f"Water Ice: {water_ice_mass * 10**-9} million tons (valued at ${water_ice_value_range[0]} - ${water_ice_value_range[1]} billion)")
+            if predicted_class_label=="X-type":
+                # Water Ice (5% of mass)
+                water_ice_mass = 0.05 * mass_of_asteroid  # in kg
+                water_ice_value_range = (water_ice_mass * 10**-9 * 10, water_ice_mass * 10**-9 * 30)  # in billion USD
+                print(f"Water Ice: {water_ice_mass * 10**-9} million tons (valued at ${water_ice_value_range[0]} - ${water_ice_value_range[1]} billion)")
 
-            # Precious Metals (10% of mass)
-            precious_metals_mass = 0.1 * mass_of_asteroid  # in kg
-            precious_metals_value_range = (precious_metals_mass * 10**-6 * 5, precious_metals_mass * 10**-6 * 15)  # in billion USD
-            print(f"Precious metals: {precious_metals_mass * 10**-6} tons (valued at ${precious_metals_value_range[0]} - ${precious_metals_value_range[1]} billion)")
+                # Precious Metals (10% of mass)
+                precious_metals_mass = 0.1 * mass_of_asteroid  # in kg
+                precious_metals_value_range = (precious_metals_mass * 10**-6 * 5, precious_metals_mass * 10**-6 * 15)  # in billion USD
+                print(f"Precious metals: {precious_metals_mass * 10**-6} tons (valued at ${precious_metals_value_range[0]} - ${precious_metals_value_range[1]} billion)")
 
-            # Organic Compounds (1% of mass)
-            organic_compounds_mass = 0.01 * mass_of_asteroid  # in kg
-            organic_compounds_value_range = (organic_compounds_mass * 10**-9 * 1, organic_compounds_mass * 10**-9 * 3)  # in billion USD
-            print(f"Organic Compounds: {organic_compounds_mass * 10**-9} million tons (valued at ${organic_compounds_value_range[0]} - ${organic_compounds_value_range[1]} billion)")
+                # Organic Compounds (1% of mass)
+                organic_compounds_mass = 0.01 * mass_of_asteroid  # in kg
+                organic_compounds_value_range = (organic_compounds_mass * 10**-9 * 1, organic_compounds_mass * 10**-9 * 3)  # in billion USD
+                print(f"Organic Compounds: {organic_compounds_mass * 10**-9} million tons (valued at ${organic_compounds_value_range[0]} - ${organic_compounds_value_range[1]} billion)")
 
-            # Total Value Range
-            total_value_range = (
-                water_ice_value_range[0] + precious_metals_value_range[0] + organic_compounds_value_range[0],
-                water_ice_value_range[1] + precious_metals_value_range[1] + organic_compounds_value_range[1]
-            )
-            print(f"Total estimated value: ${total_value_range[0]} - ${total_value_range[1]} billion")
+                # Total Value Range
+                total_value_range = (
+                    water_ice_value_range[0] + precious_metals_value_range[0] + organic_compounds_value_range[0],
+                    water_ice_value_range[1] + precious_metals_value_range[1] + organic_compounds_value_range[1]
+                )
+                print(f"Total estimated value: ${total_value_range[0]} - ${total_value_range[1]} billion")
 
-            total_value_range_quadrillion = (total_value_range[0] / 1_000_000, total_value_range[1] / 1_000_000)
-            print(f"Total estimated value in quad: ${total_value_range_quadrillion[0]} - ${total_value_range_quadrillion[1]} quadrillion")
+                total_value_range_quadrillion = (total_value_range[0] / 1_000_000, total_value_range[1] / 1_000_000)
+                print(f"Total estimated value in quad: ${total_value_range_quadrillion[0]} - ${total_value_range_quadrillion[1]} quadrillion")
+                if total_value_range[0] < 100_000_000:
+                    total_value_display = {
+                        "value_range": total_value_range,
+                        "unit": "billion"  # Display in billions
+                    }
+                else:
+                    total_value_display = {
+                        "value_range": total_value_range,
+                        "unit": "quadrillion"  # Display in quadrillions
+                    }
 
-            if total_value_range[0] < 100_000_000:
-                total_value_display = {
-                    "value_range": total_value_range,
-                    "unit": "billion"  # Display in billions
-                }
             else:
-                total_value_display = {
-                    "value_range": total_value_range_quadrillion,
-                    "unit": "quadrillion"  # Display in billions
-                }
+                # Water Ice (5% of mass)
+                water_ice_mass = 0.05 * mass_of_asteroid  # in kg
+                water_ice_value_range = (water_ice_mass * 10**-3 * 10, water_ice_mass * 10**-3 * 30)  # in billion USD
+                print(f"Water Ice: {water_ice_mass * 10**-3} million tons (valued at ${water_ice_value_range[0]} - ${water_ice_value_range[1]} billion)")
+
+                # Precious Metals (10% of mass)
+                precious_metals_mass = 0.1 * mass_of_asteroid  # in kg
+                precious_metals_value_range = (precious_metals_mass * 10**-3 * 5, precious_metals_mass * 10**-3 * 15)  # in billion USD
+                print(f"Precious metals: {precious_metals_mass * 10**-3} tons (valued at ${precious_metals_value_range[0]} - ${precious_metals_value_range[1]} billion)")
+
+                # Organic Compounds (1% of mass)
+                organic_compounds_mass = 0.01 * mass_of_asteroid  # in kg
+                organic_compounds_value_range = (organic_compounds_mass * 10**-3 * 1, organic_compounds_mass * 10**-3 * 3)  # in billion USD
+                print(f"Organic Compounds: {organic_compounds_mass * 10**-3} million tons (valued at ${organic_compounds_value_range[0]} - ${organic_compounds_value_range[1]} billion)")
+
+                # Total Value Range
+                total_value_range = (
+                    water_ice_value_range[0] + precious_metals_value_range[0] + organic_compounds_value_range[0],
+                    water_ice_value_range[1] + precious_metals_value_range[1] + organic_compounds_value_range[1]
+                )
+                print(f"Total estimated value: ${total_value_range[0]} - ${total_value_range[1]} billion")
+
+                total_value_range_quadrillion = (total_value_range[0] / 1_000_000, total_value_range[1] / 1_000_000)
+                print(f"Total estimated value in quad: ${total_value_range_quadrillion[0]} - ${total_value_range_quadrillion[1]} quadrillion")
+
+                if total_value_range[0] < 100_000_000:
+                    total_value_display = {
+                        "value_range": total_value_range_quadrillion,
+                        "unit": "billion"  # Display in billions
+                    }
+                else:
+                    total_value_display = {
+                        "value_range": total_value_range_quadrillion,
+                        "unit": "billion"  # Display in quadrillions
+                    }
 
             mission_cost={
                         "design_cost": design_cost,
@@ -373,27 +445,6 @@ def get_mission_data():
             "benefits": benefits
         }
     })
-
-# @app.route('/nasa/<path:path>')
-# def proxy(path):
-#     # Construct the NASA URL
-#     nasa_url = f'https://ssd.jpl.nasa.gov/{path}'
-    
-#     # Forward the request to NASA
-#     resp = requests.get(nasa_url, 
-#                         headers={k: v for k, v in request.headers if k.lower() != 'host'},
-#                         stream=True)
-    
-#     # Create response object
-#     excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection',
-#                         'x-frame-options']  # Remove x-frame-options to allow embedding
-#     headers = [(name, value) for (name, value) in resp.raw.headers.items()
-#                if name.lower() not in excluded_headers]
-    
-#     # Add CORS headers
-#     headers.append(('Access-Control-Allow-Origin', '*'))
-    
-#     return Response(resp.content, resp.status_code, headers)
 
 if __name__ == "__main__":
     app.run(debug=True)
