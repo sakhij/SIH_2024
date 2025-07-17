@@ -76,7 +76,6 @@
    * Navigate to the `frontend/` folder.
    * Open `index.html` in your preferred web browser (e.g., Chrome or Firefox).
 
----
 
 ## 🚀 Future Enhancements
 
@@ -91,7 +90,6 @@
 
 ![Winning Moment](static/images/sih.jpg)
 
-> *(Make sure the image `winning.jpg` is placed in the `assets/` folder)*
 
    
 
