@@ -76,6 +76,30 @@
    * Navigate to the `frontend/` folder.
    * Open `index.html` in your preferred web browser (e.g., Chrome or Firefox).
 
+---
+
+## 🚀 Future Enhancements
+
+* Integrate live feed from NASA APIs
+* Cloud deployment for public use
+* GPU support for asteroid image analysis
+
+
+## 🖼️ Winning Moment
+
+> *Proud winners of Smart India Hackathon 2024 – Team Avishkati Nexus*
+
+![Winning Moment](static/images/sih.jpg)
+
+> *(Make sure the image `winning.jpg` is placed in the `assets/` folder)*
+
+   
+
+## 📬 Contact
+
+**Muskan Goyal** – [Email](mailto:goyalmuskan0606@gmail.com)
+GitHub: [github.com/muskangoyal0606](https://github.com/muskangoyal0606)
+
 
 
 
